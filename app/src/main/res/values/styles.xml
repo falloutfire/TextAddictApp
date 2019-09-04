@@ -22,14 +22,4 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:textColorPrimary">@android:color/white</item>-->
     </style>
-
-    <style name="ActionbarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="android:colorControlNormal">#FFFFFF</item>
-    </style>
-
-    <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
-        <item name="android:background">@color/colorPrimaryDark</item>
-        <item name="android:textColor">@color/colorPrimary</item>
-    </style>
-
 </resources>

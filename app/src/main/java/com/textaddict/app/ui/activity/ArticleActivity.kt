@@ -18,7 +18,6 @@ import com.textaddict.app.ui.fragment.ArticleFragment
 import kotlinx.android.synthetic.main.activity_article.*
 import kotlin.math.abs
 
-
 class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteractionListener {
     override fun onFragmentInteraction(uri: Uri) {
         Log.e("fragment", "frag")
@@ -27,7 +26,7 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
     private lateinit var domain: String
 
     private lateinit var shareActionProvider: ShareActionProvider
-    lateinit var actionBar: Toolbar
+    private lateinit var actionBar: Toolbar
 
     private val mHideHandler = Handler()
     private val mHideRunnable = Runnable {
@@ -73,12 +72,8 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
                 }
                 verticalOffset == 0 -> {
                     // Fully Expanded - show the status bar
-                    //if (Build.VERSION.SDK_INT >= 16) {
                     mHideHandler.removeCallbacks(mHideRunnable)
                     mHideHandler.postDelayed(mShowRunnable, UI_ANIMATION_DELAY.toLong())
-                    /*} else {
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                        }*/
                 }
                 else -> {
                     // Somewhere in between
@@ -119,7 +114,7 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
         menuInflater.inflate(R.menu.article_menu_white, menu)
         val menuItem = menu?.findItem(R.id.action_share_article)
         shareActionProvider = MenuItemCompat.getActionProvider(menuItem) as ShareActionProvider
-        setShareActionIntent("$domain")
+        setShareActionIntent(domain)
         return super.onPrepareOptionsMenu(menu)
     }
 
