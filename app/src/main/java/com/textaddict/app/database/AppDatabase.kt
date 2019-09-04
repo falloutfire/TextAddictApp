@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.textaddict.app.database.converter.Converters
 import com.textaddict.app.database.dao.ArticleDao
 import com.textaddict.app.database.entity.Article
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
  * AppDatabase provides a reference to the dao to repositories
  */
 @Database(entities = [Article::class], version = 1)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun articleDao(): ArticleDao
@@ -55,6 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         suspend fun populateDatabase(articleDao: ArticleDao) {
+            val test = articleDao.loadAllArticleCheck()
             if (articleDao.loadAllArticleCheck().isEmpty()) {
                 val list: List<Article> = DataGenerator().generateArticles()
                 for (i in list) {

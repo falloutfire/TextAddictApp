@@ -19,9 +19,6 @@ import kotlinx.android.synthetic.main.activity_article.*
 import kotlin.math.abs
 
 class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteractionListener {
-    override fun onFragmentInteraction(uri: Uri) {
-        Log.e("fragment", "frag")
-    }
 
     private lateinit var domain: String
 
@@ -30,12 +27,19 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
 
     private val mHideHandler = Handler()
     private val mHideRunnable = Runnable {
-        var uiOptions = mRoot.systemUiVisibility
-        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LOW_PROFILE
+        /*uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LOW_PROFILE
         uiOptions = uiOptions and View.SYSTEM_UI_FLAG_FULLSCREEN.inv()
-        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        uiOptions = uiOptions and View.SYSTEM_UI_FLAG_IMMERSIVE.inv()
+        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_IMMERSIVE
         uiOptions = uiOptions or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION*/
+
+        var uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE and
+                View.SYSTEM_UI_FLAG_FULLSCREEN.inv() or
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 
         mRoot.systemUiVisibility = uiOptions
     }
@@ -105,6 +109,10 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
     private fun delayedHide(delayMillis: Int) {
         mHideHandler.removeCallbacks(mHideRunnable)
         mHideHandler.postDelayed(mHideRunnable, delayMillis.toLong())
+    }
+
+    override fun onFragmentInteraction(uri: Uri) {
+        Log.e("fragment", "frag")
     }
 
     /**

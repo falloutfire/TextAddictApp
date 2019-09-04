@@ -17,4 +17,8 @@
     <string name="date_label">Date_label</string>
     <string name="domain_label">Domain</string>
     <string name="label">Label</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

@@ -1,17 +1,15 @@
 package com.textaddict.app.ui.adapter
 
-
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.textaddict.app.R
-import com.textaddict.app.database.converter.DateConverter
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.fragment.ArticleListFragment.OnListFragmentInteractionListener
 import kotlinx.android.synthetic.main.fragment_article_item.view.*
+import java.text.SimpleDateFormat
 
 /**
  * [RecyclerView.Adapter] that can display a [articles] and makes a call to the
@@ -39,7 +37,11 @@ class ArticleViewAdapter internal constructor(
         val item = articles[position]
         holder.mTitleView.text = item.title
         holder.mDomainView.text = item.domain
-        holder.mDateView.text = DateConverter().toDate(item.date).toString()
+
+        val df = SimpleDateFormat.getDateInstance()
+        val now = df.format(item.date)
+
+        holder.mDateView.text = now
 
         with(holder.mView) {
             tag = item
@@ -49,7 +51,7 @@ class ArticleViewAdapter internal constructor(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.fragment_article_item, parent, false)
+            .inflate(com.textaddict.app.R.layout.fragment_article_item, parent, false)
         return ViewHolder(view)
     }
 

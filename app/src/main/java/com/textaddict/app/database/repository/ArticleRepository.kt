@@ -9,6 +9,7 @@ import com.textaddict.app.database.dao.ArticleDao
 import com.textaddict.app.database.entity.Article
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
 
 class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: ArticleDao) {
 
@@ -43,7 +44,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
                 "Baeldung",
                 DataGenerator().getHost("https://www.baeldung.com/spring-resttemplate-post-json"),
                 "https://www.baeldung.com/spring-resttemplate-post-json",
-                System.currentTimeMillis(),
+                Date(System.currentTimeMillis()),
                 null
             )
             articleDao.insertArticle(article)
@@ -84,7 +85,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
                             "Test",
                             jHtmlParser.page.domain,
                             jHtmlParser.page.uri.path,
-                            System.currentTimeMillis(),
+                            Date(System.currentTimeMillis()),
                             jHtmlParser.outerHtml()
                         )
                     )
