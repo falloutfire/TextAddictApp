@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">TextAddict</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_favorite">Favorite</string>
+    <string name="title_search">Search</string>
+    <string name="title_person">Person</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="archive_article">Archive article</string>
+    <string name="share_article">Share article</string>
+    <string name="open_in_web">Open in WEB</string>
+    <string name="delete_article">Delete article</string>
+    <string name="add_to_favorite">Add to Favorite</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
