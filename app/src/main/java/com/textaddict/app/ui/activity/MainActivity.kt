@@ -9,7 +9,6 @@ import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.fragment.ArticleListFragment
 
-
 class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInteractionListener {
 
     private lateinit var navView: BottomNavigationView
@@ -51,12 +50,6 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
             supportFragmentManager.beginTransaction()
                 .add(R.id.frame_container, fragment, null).commit()
         }
-
-        /*val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)*/
-
-        /*viewModel = ViewModelProvider(this).get(ListArticleViewModel::class.java)
-        viewModel.setData()*/
     }
 
     override fun onListFragmentInteraction(item: Article?) {

@@ -24,14 +24,14 @@ class StartUpActivity : AppCompatActivity() {
         uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         start_up_layout.systemUiVisibility = uiOptions
 
+        // TODO create and check db connection
         Handler().postDelayed(
             {
-                // This method will be executed once the timer is over
-                // Start your app main activity
                 val i = Intent(this, MainActivity::class.java)
-                startActivity(i, ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
-
-                // close this activity
+                startActivity(
+                    i,
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+                )
                 finish()
             }, SPLASH_TIME_OUT
         )

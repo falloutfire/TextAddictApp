@@ -16,10 +16,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
 import com.textaddict.app.viewmodel.ArticleViewModel
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "domain"
+private const val ARG_PARAM1 = "DOMAIN"
+private const val ARG_PARAM2 = "ARTICLE_ID"
 
 /**
  * A simple [Fragment] subclass.
@@ -32,6 +30,7 @@ private const val ARG_PARAM1 = "domain"
  */
 class ArticleFragment : Fragment() {
     private var domain: String? = null
+    private var articleId: String? = null
     private var listener: OnFragmentInteractionListener? = null
 
     private lateinit var viewModel: ArticleViewModel
@@ -43,6 +42,7 @@ class ArticleFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             domain = it.getString(ARG_PARAM1)
+            articleId = it.getString(ARG_PARAM2)
         }
         setHasOptionsMenu(true)
     }
@@ -120,12 +120,12 @@ class ArticleFragment : Fragment() {
          * @param domain Parameter 1.
          * @return A new instance of fragment ArticleFragment.
          */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(domain: String) =
+        fun newInstance(domain: String, articleId: String) =
             ArticleFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, domain)
+                    putString(ARG_PARAM2, articleId)
                 }
             }
 

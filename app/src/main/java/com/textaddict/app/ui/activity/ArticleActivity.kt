@@ -18,9 +18,11 @@ import com.textaddict.app.ui.fragment.ArticleFragment
 import kotlinx.android.synthetic.main.activity_article.*
 import kotlin.math.abs
 
+
 class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteractionListener {
 
     private lateinit var domain: String
+    private lateinit var articleId: String
 
     private lateinit var shareActionProvider: ShareActionProvider
     private lateinit var actionBar: Toolbar
@@ -59,10 +61,11 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
         domain = intent.extras!!.get("DOMAIN") as String
+        articleId = intent.extras!!.get("ID") as String
 
         if (savedInstanceState == null) {
             val transaction = supportFragmentManager.beginTransaction()
-            val fragment = ArticleFragment.newInstance(domain)
+            val fragment = ArticleFragment.newInstance(domain, articleId)
             transaction.replace(R.id.article_fragment, fragment)
             transaction.commit()
         }
