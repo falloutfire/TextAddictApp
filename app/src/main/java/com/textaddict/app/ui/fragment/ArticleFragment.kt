@@ -30,7 +30,7 @@ private const val ARG_PARAM2 = "ARTICLE_ID"
  */
 class ArticleFragment : Fragment() {
     private var domain: String? = null
-    private var articleId: String? = null
+    private var articleId: Long? = null
     private var listener: OnFragmentInteractionListener? = null
 
     private lateinit var viewModel: ArticleViewModel
@@ -42,7 +42,7 @@ class ArticleFragment : Fragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             domain = it.getString(ARG_PARAM1)
-            articleId = it.getString(ARG_PARAM2)
+            articleId = it.getLong(ARG_PARAM2)
         }
         setHasOptionsMenu(true)
     }
@@ -73,7 +73,7 @@ class ArticleFragment : Fragment() {
             }
         })
 
-        viewModel.getPage(domain)
+        viewModel.getPage(articleId, domain)
 
         return view
     }
@@ -121,11 +121,11 @@ class ArticleFragment : Fragment() {
          * @return A new instance of fragment ArticleFragment.
          */
         @JvmStatic
-        fun newInstance(domain: String, articleId: String) =
+        fun newInstance(domain: String, articleId: Long) =
             ArticleFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, domain)
-                    putString(ARG_PARAM2, articleId)
+                    putLong(ARG_PARAM2, articleId)
                 }
             }
 

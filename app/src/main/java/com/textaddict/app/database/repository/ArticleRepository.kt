@@ -96,6 +96,51 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    suspend fun getArticleByIdAndUrl(id: Long, url: String): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val article = articleDao.getArticleByIdAndDomain(id, url)
+                if (article.isPresent) {
+                    if (article.get().content != null) {
+                        return@withContext article.get().content
+                    } else {
+                        val jHtmlParser =
+                            JHtmlParser(
+                                url,
+                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
+                            )
+                        jHtmlParser.init()
+                        val update = article.get()
+                        update.content = jHtmlParser.outerHtml()
+                        articleDao.insertArticle(update)
+                        return@withContext update.content
+                    }
+                } else {
+                    val jHtmlParser =
+                        JHtmlParser(
+                            url,
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
+                            /*"Mozilla/5.0 (Linux; Android 9; Mi A2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.111 Mobile Safari/537.36"*/
+                        )
+                    jHtmlParser.init()
+                    articleDao.insertArticle(
+                        Article(
+                            "Test",
+                            jHtmlParser.page.domain,
+                            jHtmlParser.page.uri.path,
+                            Date(System.currentTimeMillis()),
+                            jHtmlParser.outerHtml()
+                        )
+                    )
+                    return@withContext jHtmlParser.outerHtml()
+                }
+            } catch (error: Exception) {
+                throw error
+            }
+        }
+    }
 }
 
 /**

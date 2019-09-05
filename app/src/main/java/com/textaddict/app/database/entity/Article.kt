@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import com.textaddict.app.database.converter.Converters
 import java.util.*
 
+//TODO maybe add key domain
 @Entity
 data class Article(
     var title: String,

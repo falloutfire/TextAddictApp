@@ -39,11 +39,11 @@ class ArticleViewModel(application: Application) : AndroidViewModel(application)
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    fun getPage(domain: String?) {
-        if (domain != null) {
+    fun getPage(articleId: Long?, domain: String?) {
+        if (domain != null && articleId != null) {
             launchDataLoad {
                 val page: String? = withContext(Dispatchers.IO) {
-                    repository.refreshTitle(domain)
+                    repository.getArticleByIdAndUrl(articleId, domain)
                 }
                 _title.value = page
                 _page.value = page

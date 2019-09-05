@@ -28,6 +28,9 @@ interface ArticleDao {
     @Query("select * from Article where id = :id")
     fun getArticleById(id: Long): Optional<Article>
 
+    @Query("select * from Article where id = :id and fullPath = :fullPath")
+    fun getArticleByIdAndDomain(id: Long, fullPath: String): Optional<Article>
+
     @Query("DELETE FROM Article where id = :id")
     fun deleteArticle(id: String)
 

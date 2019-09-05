@@ -22,21 +22,15 @@ import kotlin.math.abs
 class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteractionListener {
 
     private lateinit var domain: String
-    private lateinit var articleId: String
+    private var articleId: Long = 0
 
     private lateinit var shareActionProvider: ShareActionProvider
     private lateinit var actionBar: Toolbar
 
     private val mHideHandler = Handler()
     private val mHideRunnable = Runnable {
-        /*uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LOW_PROFILE
-        uiOptions = uiOptions and View.SYSTEM_UI_FLAG_FULLSCREEN.inv()
-        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_IMMERSIVE
-        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION*/
 
-        var uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE and
+        val uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE and
                 View.SYSTEM_UI_FLAG_FULLSCREEN.inv() or
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
@@ -61,7 +55,7 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
         domain = intent.extras!!.get("DOMAIN") as String
-        articleId = intent.extras!!.get("ID") as String
+        articleId = intent.extras!!.getLong("ID")
 
         if (savedInstanceState == null) {
             val transaction = supportFragmentManager.beginTransaction()
