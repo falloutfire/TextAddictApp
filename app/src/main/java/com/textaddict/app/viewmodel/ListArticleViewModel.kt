@@ -44,7 +44,7 @@ import kotlinx.coroutines.launch
 
     fun addData() {
         launchDataLoad {
-            articleRepository.addArticle()
+            articleRepository.addArticleInDatabase()
         }
     }
 
@@ -99,15 +99,7 @@ class ListArticleViewModel(application: Application) : AndroidViewModel(applicat
 
     fun addData() {
         launchDataLoad {
-            repository.addArticle()
-        }
-    }
-
-    fun initDatabase() {
-        launchDataLoad {
-            if (articles.value!!.isEmpty()) {
-                repository.initDatabase()
-            }
+            repository.addArticleInDatabase()
         }
     }
 

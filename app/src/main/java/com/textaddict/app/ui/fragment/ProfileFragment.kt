@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.textaddict.app.R
 
+
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -42,7 +43,14 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+        val view = inflater.inflate(R.layout.fragment_profile, container, false)
+        /*val bitmapProfile = BitmapFactory.decodeResource(resources, R.mipmap.ic_profile_label_round)
+        val circularBitmapProfile = RoundedBitmapDrawableFactory.create(resources, bitmapProfile)
+
+        circularBitmapProfile.isCircular = true
+
+        (view.findViewById(R.id.profileImageView) as ImageView).setImageDrawable(circularBitmapProfile)*/
+        return view
     }
 
     // TODO: Rename method, update argument and hook method into UI event

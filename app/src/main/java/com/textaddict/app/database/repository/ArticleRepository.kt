@@ -1,8 +1,7 @@
 package com.textaddict.app.database.repository
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import com.github.falloutfire.htmlparser.Entity.Page
 import com.github.falloutfire.htmlparser.JHtmlParser
 import com.textaddict.app.database.DataGenerator
 import com.textaddict.app.database.dao.ArticleDao
@@ -27,69 +26,45 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
         }
     }
 
-    //@WorkerThread
-    suspend fun initDatabase() {
-        return withContext(Dispatchers.IO) {
-            val list: List<Article> = DataGenerator().generateArticles()
-            for (i in list) {
-                articleDao.insertArticle(i)
-            }
-        }
-    }
-
-    //@WorkerThread
-    suspend fun addArticle() {
+    suspend fun addArticleInDatabase() {
         return withContext(Dispatchers.IO) {
             val article = Article(
                 "Baeldung",
                 DataGenerator().getHost("https://www.baeldung.com/spring-resttemplate-post-json"),
                 "https://www.baeldung.com/spring-resttemplate-post-json",
                 Date(System.currentTimeMillis()),
-                null
+                null, archieve = false, favorite = false, userId = 0
             )
             articleDao.insertArticle(article)
         }
     }
 
-    //@WorkerThread
-    @RequiresApi(Build.VERSION_CODES.N)
-    suspend fun refreshTitle(url: String): String? {
+    suspend fun getArticleByIdAndUrl(id: Long, url: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-                val article = articleDao.getArticleByDomain(url)
-                if (article.isPresent) {
-                    if (article.get().content != null) {
-                        return@withContext article.get().content
+                val article = articleDao.getArticleByIdAndDomain(id, url)
+                if (article != null) {
+                    if (article.content != null) {
+                        return@withContext article.content
                     } else {
-                        val jHtmlParser =
-                            JHtmlParser(
-                                url,
-                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
-                            )
-                        jHtmlParser.init()
-                        val update = article.get()
-                        update.content = jHtmlParser.outerHtml()
-                        articleDao.insertArticle(update)
-                        return@withContext update.content
+                        val page = getPageFromHtmlParser(url)
+                        article.content = page.article.outerHtml()
+                        articleDao.insertArticle(article)
+                        return@withContext article.content
                     }
                 } else {
-                    val jHtmlParser =
-                        JHtmlParser(
-                            url,
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
-                            /*"Mozilla/5.0 (Linux; Android 9; Mi A2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.111 Mobile Safari/537.36"*/
-                        )
-                    jHtmlParser.init()
+                    val page = getPageFromHtmlParser(url)
                     articleDao.insertArticle(
                         Article(
                             "Test",
-                            jHtmlParser.page.domain,
-                            jHtmlParser.page.uri.path,
+                            page.domain,
+                            page.uri.path,
                             Date(System.currentTimeMillis()),
-                            jHtmlParser.outerHtml()
+                            page.article.outerHtml(),
+                            archieve = false, favorite = false, userId = 0
                         )
                     )
-                    return@withContext jHtmlParser.outerHtml()
+                    return@withContext page.article.outerHtml()
                 }
             } catch (error: Exception) {
                 throw error
@@ -97,49 +72,15 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    suspend fun getArticleByIdAndUrl(id: Long, url: String): String? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val article = articleDao.getArticleByIdAndDomain(id, url)
-                if (article.isPresent) {
-                    if (article.get().content != null) {
-                        return@withContext article.get().content
-                    } else {
-                        val jHtmlParser =
-                            JHtmlParser(
-                                url,
-                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
-                            )
-                        jHtmlParser.init()
-                        val update = article.get()
-                        update.content = jHtmlParser.outerHtml()
-                        articleDao.insertArticle(update)
-                        return@withContext update.content
-                    }
-                } else {
-                    val jHtmlParser =
-                        JHtmlParser(
-                            url,
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
-                            /*"Mozilla/5.0 (Linux; Android 9; Mi A2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.111 Mobile Safari/537.36"*/
-                        )
-                    jHtmlParser.init()
-                    articleDao.insertArticle(
-                        Article(
-                            "Test",
-                            jHtmlParser.page.domain,
-                            jHtmlParser.page.uri.path,
-                            Date(System.currentTimeMillis()),
-                            jHtmlParser.outerHtml()
-                        )
-                    )
-                    return@withContext jHtmlParser.outerHtml()
-                }
-            } catch (error: Exception) {
-                throw error
-            }
-        }
+    private suspend fun getPageFromHtmlParser(url: String): Page = withContext(Dispatchers.Default) {
+        val jHtmlParser =
+            JHtmlParser(
+                url,
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
+                /*"Mozilla/5.0 (Linux; Android 9; Mi A2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.111 Mobile Safari/537.36"*/
+            )
+        jHtmlParser.init()
+        return@withContext jHtmlParser.page
     }
 }
 
