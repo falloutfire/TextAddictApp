@@ -7,10 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
+import com.textaddict.app.viewmodel.impl.ProfileViewModel
+import kotlinx.android.synthetic.main.fragment_profile.*
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
@@ -24,10 +26,11 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
+
+    private lateinit var viewModel: ProfileViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +45,25 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_profile, container, false)
+        val view = inflater.inflate(R.layout.fragment_profile, container, false)
+
+        viewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
+
+        viewModel.user.observe(this, Observer { value ->
+            value.let {
+                username_textview.text = value.username
+            }
+        })
+
+        viewModel.countPages.observe(this, Observer { value ->
+            value?.let {
+                count_pages_textview.text = it.size.toString()
+            }
+        })
+
+        viewModel.getUser()
+
+        return view
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -55,7 +76,7 @@ class ProfileFragment : Fragment() {
         if (context is OnFragmentInteractionListener) {
             listener = context
         } else {
-            throw RuntimeException(context.toString() + " must implement OnFragmentInteractionListener")
+            throw RuntimeException("$context must implement OnFragmentInteractionListener")
         }
     }
 
@@ -70,10 +91,6 @@ class ProfileFragment : Fragment() {
      * to the activity and potentially other fragments contained in that
      * activity.
      *
-     *
-     * See the Android Training lesson [Communicating with Other Fragments]
-     * (http://developer.android.com/training/basics/fragments/communicating.html)
-     * for more information.
      */
     interface OnFragmentInteractionListener {
         // TODO: Update argument type and name

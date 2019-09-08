@@ -1,15 +1,13 @@
-package com.textaddict.app.viewmodel
+package com.textaddict.app.viewmodel.impl
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.textaddict.app.database.AppDatabase
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.database.repository.ArticleRepository
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import com.textaddict.app.viewmodel.AppViewModel
 
 /*class ListArticleViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -44,7 +42,7 @@ import kotlinx.coroutines.launch
 
     fun addData() {
         launchDataLoad {
-            articleRepository.addArticle()
+            articleRepository.addArticleInDatabase()
         }
     }
 
@@ -74,14 +72,10 @@ import kotlinx.coroutines.launch
 }*/
 
 
-class ListArticleViewModel(application: Application) : AndroidViewModel(application) {
+class ListArticleViewModel(application: Application) : AppViewModel(application) {
 
     private val repository: ArticleRepository
     val articles: LiveData<List<Article>>
-
-    private val _spinner = MutableLiveData<Boolean>()
-    val spinner: LiveData<Boolean>
-        get() = _spinner
 
     val title: LiveData<String>
         get() = _title
@@ -97,30 +91,9 @@ class ListArticleViewModel(application: Application) : AndroidViewModel(applicat
         articles = repository.articles
     }
 
-    fun addData() {
+    fun addData(userId: Long) {
         launchDataLoad {
-            repository.addArticle()
-        }
-    }
-
-    fun initDatabase() {
-        launchDataLoad {
-            if (articles.value!!.isEmpty()) {
-                repository.initDatabase()
-            }
-        }
-    }
-
-    private fun launchDataLoad(block: suspend () -> Unit): Job {
-        return viewModelScope.launch {
-            try {
-                _spinner.value = true
-                block()
-            } catch (error: Exception) {
-                error.message
-            } finally {
-                _spinner.value = false
-            }
+            repository.addArticleInDatabase(userId)
         }
     }
 }

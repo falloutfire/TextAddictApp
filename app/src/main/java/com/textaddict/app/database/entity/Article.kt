@@ -1,12 +1,17 @@
 package com.textaddict.app.database.entity
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room.*
 import com.textaddict.app.database.converter.Converters
 import java.util.*
 
-@Entity
+@Entity(
+    foreignKeys = [ForeignKey(
+        entity = User::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("user_id"),
+        onDelete = ForeignKey.CASCADE
+    )]
+)
 data class Article(
     var title: String,
     var domain: String,
@@ -15,7 +20,9 @@ data class Article(
     var date: Date?,
     var content: String?,
     var archieve: Boolean = false,
-    var favorite: Boolean = false
+    var favorite: Boolean = false,
+    @ColumnInfo(name = "user_id")
+    var userId: Long
 ) {
 
     @PrimaryKey(autoGenerate = true)

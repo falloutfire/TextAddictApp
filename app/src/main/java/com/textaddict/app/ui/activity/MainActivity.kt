@@ -1,27 +1,45 @@
 package com.textaddict.app.ui.activity
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
+import com.textaddict.app.ui.fragment.ArchiveFragment
 import com.textaddict.app.ui.fragment.ArticleListFragment
+import com.textaddict.app.ui.fragment.ProfileFragment
 
-class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInteractionListener,
+    ArchiveFragment.OnFragmentInteractionListener, ProfileFragment.OnFragmentInteractionListener {
+    override fun onFragmentInteraction(uri: Uri) {
+        Log.e("fragment", "frag")
+    }
 
     private lateinit var navView: BottomNavigationView
-    private lateinit var fragment: Fragment
+    private var fragmentArticles: Fragment? = null
+    private var fragmentArchive: Fragment? = null
+    private var fragmentProfile: Fragment? = null
+    private var fragmentArticleList: Fragment? = null
+    private var userId: Long = 1
 
     private val onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
-                fragment = ArticleListFragment.newInstance(1)
-                loadFragment(fragment)
+                if (fragmentArticles == null) {
+                    fragmentArticles = ArticleListFragment.newInstance(1, userId)
+                }
+                loadFragment(fragmentArticles!!)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_favorite -> {
+                if (fragmentArchive == null) {
+                    fragmentArchive = ArchiveFragment.newInstance("", "")
+                }
+                loadFragment(fragmentArchive!!)
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_search -> {
@@ -31,6 +49,10 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_person -> {
+                if (fragmentProfile == null) {
+                    fragmentProfile = ProfileFragment.newInstance("", "")
+                }
+                loadFragment(fragmentProfile!!)
                 return@OnNavigationItemSelectedListener true
             }
         }
@@ -43,12 +65,13 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
         navView = findViewById(R.id.nav_view)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
 
+        userId = intent.getLongExtra(StartUpActivity.USER_ID, 1)
         navView.selectedItemId = 0
-        fragment = ArticleListFragment.newInstance(1)
+        fragmentArticles = ArticleListFragment.newInstance(1, userId)
         // Add product list fragment if this is first creation
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .add(R.id.frame_container, fragment, null).commit()
+                .add(R.id.frame_container, fragmentArticles!!, null).addToBackStack(null).commit()
         }
     }
 
@@ -61,7 +84,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .add(R.id.frame_container, fragment, null).commit()
+            .replace(R.id.frame_container, fragment, null).addToBackStack(null).commit()
     }
 
 }

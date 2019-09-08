@@ -8,7 +8,9 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.textaddict.app.database.converter.Converters
 import com.textaddict.app.database.dao.ArticleDao
+import com.textaddict.app.database.dao.UserDao
 import com.textaddict.app.database.entity.Article
+import com.textaddict.app.database.entity.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,11 +18,12 @@ import kotlinx.coroutines.launch
 /**
  * AppDatabase provides a reference to the dao to repositories
  */
-@Database(entities = [Article::class], version = 1)
+@Database(entities = [Article::class, User::class], version = 1)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun articleDao(): ArticleDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
@@ -51,16 +54,20 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onOpen(db)
                 INSTANCE?.let { database ->
                     scope.launch(Dispatchers.IO) {
-                        populateDatabase(database.articleDao())
+                        populateDatabase(database.userDao(), database.articleDao())
                     }
                 }
             }
         }
 
-        suspend fun populateDatabase(articleDao: ArticleDao) {
-            val test = articleDao.loadAllArticleCheck()
+        fun populateDatabase(userDao: UserDao, articleDao: ArticleDao) {
+            if (userDao.getUserByUsername("Man") == null) {
+                userDao.insertUser(User("Man", "email@mail.com"))
+            }
+
             if (articleDao.loadAllArticleCheck().isEmpty()) {
-                val list: List<Article> = DataGenerator().generateArticles()
+                val user = userDao.getUserByUsername("Man")
+                val list: List<Article> = DataGenerator().generateArticles(user!!.id)
                 for (i in list) {
                     articleDao.insertArticle(i)
                 }
