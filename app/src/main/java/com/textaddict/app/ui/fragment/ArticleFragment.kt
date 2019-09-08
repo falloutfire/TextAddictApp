@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
-import com.textaddict.app.viewmodel.ArticleViewModel
+import com.textaddict.app.viewmodel.impl.ArticleViewModel
 
 private const val ARG_PARAM1 = "DOMAIN"
 private const val ARG_PARAM2 = "ARTICLE_ID"

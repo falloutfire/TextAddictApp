@@ -18,11 +18,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.adapter.ArticleViewAdapter
-import com.textaddict.app.viewmodel.ListArticleViewModel
+import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 
 class ArticleListFragment : Fragment() {
 
     private var columnCount = 1
+    private var userId: Long = 1
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var viewModel: ListArticleViewModel
     private lateinit var adapter: ArticleViewAdapter
@@ -74,10 +75,11 @@ class ArticleListFragment : Fragment() {
         subscribeUi(viewModel.articles)
         val fabButton: FloatingActionButton = view!!.findViewById(R.id.floatingActionButton)
         fabButton.setOnClickListener {
-            viewModel.addData()
+            viewModel.addData(userId)
             //viewModel.setData()
             subscribeUi(viewModel.articles)
             Log.e("test", "fab")
+            Log.e("userId", viewModel.articles.value?.get(0)?.userId.toString())
         }
     }
 
@@ -110,12 +112,14 @@ class ArticleListFragment : Fragment() {
     companion object {
 
         const val ARG_COLUMN_COUNT = "column-count"
+        const val ARG_USER_ID = "user-id"
 
         @JvmStatic
-        fun newInstance(columnCount: Int) =
+        fun newInstance(columnCount: Int, userId: Long) =
             ArticleListFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_COLUMN_COUNT, columnCount)
+                    putLong(ARG_USER_ID, userId)
                 }
             }
     }

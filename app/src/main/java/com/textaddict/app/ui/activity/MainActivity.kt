@@ -24,12 +24,13 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
     private var fragmentArchive: Fragment? = null
     private var fragmentProfile: Fragment? = null
     private var fragmentArticleList: Fragment? = null
+    private var userId: Long = 1
 
     private val onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
             R.id.navigation_home -> {
                 if (fragmentArticles == null) {
-                    fragmentArticles = ArticleListFragment.newInstance(1)
+                    fragmentArticles = ArticleListFragment.newInstance(1, userId)
                 }
                 loadFragment(fragmentArticles!!)
                 return@OnNavigationItemSelectedListener true
@@ -64,8 +65,9 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
         navView = findViewById(R.id.nav_view)
         navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
 
+        userId = intent.getLongExtra(StartUpActivity.USER_ID, 1)
         navView.selectedItemId = 0
-        fragmentArticles = ArticleListFragment.newInstance(1)
+        fragmentArticles = ArticleListFragment.newInstance(1, userId)
         // Add product list fragment if this is first creation
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()

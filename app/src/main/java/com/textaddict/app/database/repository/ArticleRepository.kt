@@ -26,14 +26,14 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
         }
     }
 
-    suspend fun addArticleInDatabase() {
+    suspend fun addArticleInDatabase(userId: Long) {
         return withContext(Dispatchers.IO) {
             val article = Article(
                 "Baeldung",
                 DataGenerator().getHost("https://www.baeldung.com/spring-resttemplate-post-json"),
                 "https://www.baeldung.com/spring-resttemplate-post-json",
                 Date(System.currentTimeMillis()),
-                null, archieve = false, favorite = false, userId = 0
+                null, archieve = false, favorite = false, userId = userId
             )
             articleDao.insertArticle(article)
         }
