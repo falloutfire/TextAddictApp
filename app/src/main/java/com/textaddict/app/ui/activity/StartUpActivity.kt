@@ -7,14 +7,17 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.textaddict.app.R
+import com.textaddict.app.ui.fragment.LoginFragment
 import kotlinx.android.synthetic.main.activity_start_up.*
 
 
 class StartUpActivity : AppCompatActivity() {
 
     val SPLASH_TIME_OUT = 4000L
-    lateinit var pref: SharedPreferences
+    private var fragment: Fragment? = null
+    private lateinit var pref: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +35,22 @@ class StartUpActivity : AppCompatActivity() {
         if (pref.contains(APP_PREFERENCES_USER_ID)) {
             // TODO add login screen and save user in pref
             intent.putExtra(USER_ID, pref.getInt(APP_PREFERENCES_USER_ID, 0))
+            startMainActivity(intent)
         } else {
+            fragment = LoginFragment.newInstance("", "")
+            if (savedInstanceState == null) {
+                supportFragmentManager.beginTransaction()
+                    .add(R.id.frame_enter_container, fragment!!, null).addToBackStack(null).commit()
+            }
+
             val editor = pref.edit()
             editor.putInt(APP_PREFERENCES_USER_ID, 1)
             editor.apply()
             intent.putExtra(USER_ID, pref.getInt(APP_PREFERENCES_USER_ID, 0))
         }
+    }
 
+    private fun startMainActivity(intent: Intent) {
         // TODO create and check db connection
         Handler().postDelayed(
             {

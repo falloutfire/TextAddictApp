@@ -24,4 +24,11 @@
     <string name="count_pages_label">Count pages label</string>
     <string name="reading_time">Reading time:</string>
     <string name="reading_time_label">Reading time label</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="log_in">Log in</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="log_in_back"><![CDATA[< Log in]]></string>
 </resources>
