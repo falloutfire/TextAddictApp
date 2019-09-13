@@ -4,5 +4,14 @@
     <color name="colorPrimaryDark">#50000000</color>
     <color name="colorAccent">#000000</color>
 
-    <color name="black_overlay">#FFFFFF</color>
+    <color name="white_overlay">#FFFFFF</color>
+
+
+    <!--<color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#B9BBBD</color>-->
+    <color name="colorBackground">#333C46</color>
+    <color name="colorSplashText">#F0F0F0</color>
+    <color name="colorProgressBar">#FFCE511C</color>
+    <color name="colorTextView">#83898E</color>
 </resources>

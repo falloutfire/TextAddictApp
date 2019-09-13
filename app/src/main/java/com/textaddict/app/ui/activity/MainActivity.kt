@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
         when (item.itemId) {
             R.id.navigation_home -> {
                 if (fragmentArticles == null) {
-                    fragmentArticles = ArticleListFragment.newInstance(1, userId)
+                    fragmentArticles = ArticleListFragment.newInstance(2, userId)
                 }
                 loadFragment(fragmentArticles!!)
                 return@OnNavigationItemSelectedListener true
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
         // Add product list fragment if this is first creation
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .add(R.id.frame_container, fragmentArticles!!, null).addToBackStack(null).commit()
+                .add(R.id.frame_container, fragmentArticles!!, null).commit()
         }
     }
 

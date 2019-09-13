@@ -1,6 +1,7 @@
 package com.textaddict.app.database.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import com.github.falloutfire.htmlparser.Entity.Page
 import com.github.falloutfire.htmlparser.JHtmlParser
 import com.textaddict.app.database.DataGenerator
@@ -12,11 +13,9 @@ import java.util.*
 
 class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: ArticleDao) {
 
-    val articles: LiveData<List<Article>> = articleDao.loadAllArticle()
-
-    /*val articles: LiveData<List<Article>> by lazy(LazyThreadSafetyMode.NONE) {
+    val articles: LiveData<List<Article>> by lazy(LazyThreadSafetyMode.NONE) {
         Transformations.map(articleDao.loadAllArticle()) { it }
-    }*/
+    }
 
     suspend fun refreshListArticle() {
         return withContext(Dispatchers.IO) {

@@ -14,6 +14,7 @@ import com.textaddict.app.database.entity.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * AppDatabase provides a reference to the dao to repositories
@@ -42,6 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
                 ).addCallback(AppDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
+                populateDatabase(instance.userDao(), instance.articleDao())
                 return instance
             }
         }
@@ -50,28 +52,40 @@ abstract class AppDatabase : RoomDatabase() {
             private val scope: CoroutineScope
         ) : RoomDatabase.Callback() {
 
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                INSTANCE?.let { database ->
+                    scope.launch(Dispatchers.IO) {
+                        //populateDatabase(database.userDao(), database.articleDao())
+                    }
+                }
+            }
+
             override fun onOpen(db: SupportSQLiteDatabase) {
                 super.onOpen(db)
                 INSTANCE?.let { database ->
                     scope.launch(Dispatchers.IO) {
-                        populateDatabase(database.userDao(), database.articleDao())
+                        //populateDatabase(database.userDao(), database.articleDao())
                     }
                 }
             }
         }
 
         fun populateDatabase(userDao: UserDao, articleDao: ArticleDao) {
-            if (userDao.getUserByUsername("Man") == null) {
-                userDao.insertUser(User("Man", "email@mail.com"))
-            }
+            runBlocking(Dispatchers.IO) {
+                if (userDao.getUserByUsername("Man") == null) {
+                    userDao.insertUser(User("Man", "email@mail.com", "password"))
+                }
 
-            if (articleDao.loadAllArticleCheck().isEmpty()) {
-                val user = userDao.getUserByUsername("Man")
-                val list: List<Article> = DataGenerator().generateArticles(user!!.id)
-                for (i in list) {
-                    articleDao.insertArticle(i)
+                if (articleDao.loadAllArticleCheck().isEmpty()) {
+                    val user = userDao.getUserByUsername("Man")
+                    val list: List<Article> = DataGenerator().generateArticles(user!!.id)
+                    for (i in list) {
+                        articleDao.insertArticle(i)
+                    }
                 }
             }
+
         }
     }
 }

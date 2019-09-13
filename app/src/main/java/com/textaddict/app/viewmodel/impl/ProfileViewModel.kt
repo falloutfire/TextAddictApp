@@ -34,9 +34,6 @@ class ProfileViewModel(application: Application) : AppViewModel(application) {
         launchDataLoad {
             val user = userRepository.getUserByUsername("Man")
             _user.value = user
-
-            /*val count = articleRepository.articles
-            _countPages.value = count.toString()*/
         }
     }
 
