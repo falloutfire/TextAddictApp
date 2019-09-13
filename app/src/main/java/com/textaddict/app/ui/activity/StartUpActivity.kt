@@ -71,7 +71,7 @@ class StartUpActivity : AppCompatActivity() {
     private fun startAnimation() {
         appIconImageView.animate().apply {
             x(50f)
-            y(100f)
+            y(110f)
             duration = 1000
         }.setListener(object : Animator.AnimatorListener {
             override fun onAnimationRepeat(p0: Animator?) {
