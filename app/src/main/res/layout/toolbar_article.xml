@@ -7,5 +7,4 @@
     android:background="?attr/colorAccent"
     android:minHeight="?attr/actionBarSize"
     app:popupTheme="@style/ActionbarTheme"
-    app:theme="@style/ActionbarTheme">
-</androidx.appcompat.widget.Toolbar>
+    app:theme="@style/ActionbarTheme" />

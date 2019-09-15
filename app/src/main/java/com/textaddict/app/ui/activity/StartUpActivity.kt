@@ -9,13 +9,14 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import com.textaddict.app.R
 import com.textaddict.app.ui.fragment.LoginFragment
+import com.textaddict.app.ui.fragment.SignUpFragment
 import kotlinx.android.synthetic.main.activity_start_up.*
 
 class StartUpActivity : AppCompatActivity() {
 
-    val SPLASH_TIME_OUT = 4000L
     private var fragment: Fragment? = null
     private lateinit var pref: SharedPreferences
 
@@ -50,6 +51,13 @@ class StartUpActivity : AppCompatActivity() {
 
                     fragment = LoginFragment.newInstance("", "")
                     if (savedInstanceState == null) {
+                        supportFragmentManager.beginTransaction()
+                            .add(
+                                R.id.frame_enter_container,
+                                fragment!!,
+                                null
+                            )/*.addToBackStack(fragmentLogin)*/.commitAllowingStateLoss()
+                    } else {
                         supportFragmentManager.beginTransaction()
                             .add(R.id.frame_enter_container, fragment!!, null).commit()
                     }
@@ -92,6 +100,24 @@ class StartUpActivity : AppCompatActivity() {
         })
     }
 
+    fun openSignUpFragment() {
+        fragment = SignUpFragment.newInstance("", "")
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frame_enter_container, fragment!!, null)
+            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)/*.addToBackStack(
+                fragmentSignUp
+            )*/.commit()
+    }
+
+    fun openLoginFragment() {
+        fragment = LoginFragment.newInstance("", "")
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frame_enter_container, fragment!!, null)
+            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)/*.addToBackStack(
+                fragmentLogin
+            )*/.commit()
+    }
+
     private fun startMainActivity(intent: Intent) {
         // TODO create and check db connection
         /*Handler().postDelayed(
@@ -106,10 +132,14 @@ class StartUpActivity : AppCompatActivity() {
     }
 
     companion object {
+        val SPLASH_TIME_OUT = 4000L
         var USER_ID = "USER_ID"
 
         // имя файла настроек
         val APP_PREFERENCES = "user_pref"
         val APP_PREFERENCES_USER_ID = "user_id"
+
+        val fragmentSignUp = "SIGN_UP_FRAGMENT"
+        val fragmentLogin = "LOG_IN_FRAGMENT"
     }
 }

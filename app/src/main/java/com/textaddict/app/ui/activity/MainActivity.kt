@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
 
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.frame_container, fragment, null)/*.addToBackStack(null)*/.commit()
+            .replace(R.id.frame_container, fragment, null).addToBackStack(null).commit()
     }
 
 }
