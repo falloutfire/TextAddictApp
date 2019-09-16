@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
+import android.text.Editable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,8 +22,8 @@ import com.textaddict.app.ui.activity.StartUpActivity
 import com.textaddict.app.viewmodel.impl.LoginViewModel
 import kotlinx.android.synthetic.main.fragment_login.*
 
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+private const val ARG_PARAM1 = "username"
+private const val ARG_PARAM2 = "password"
 
 class LoginFragment : Fragment(), View.OnClickListener {
     private var param1: String? = null
@@ -51,6 +52,11 @@ class LoginFragment : Fragment(), View.OnClickListener {
             activity
         )
 
+        if (savedInstanceState != null) {
+            username_editText.text = savedInstanceState.getString(username) as Editable
+            password_editText.text = savedInstanceState.getString(password) as Editable
+        }
+
         viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
 
         pref = activity!!.getSharedPreferences(StartUpActivity.APP_PREFERENCES, AppCompatActivity.MODE_PRIVATE)
@@ -63,7 +69,7 @@ class LoginFragment : Fragment(), View.OnClickListener {
                     progressDialog.setMessage("Checking Account...")
                     progressDialog.show()
                 } else {
-                    Handler().postDelayed(Runnable {
+                    Handler().postDelayed({
                         progressDialog.hide()
                         login_button.isEnabled = true
                     }, 1500)
@@ -111,6 +117,11 @@ class LoginFragment : Fragment(), View.OnClickListener {
         viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString(), pref)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(username, username_editText.text.toString())
+        outState.putString(password, password_editText.text.toString())
+    }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -128,5 +139,8 @@ class LoginFragment : Fragment(), View.OnClickListener {
                     putString(ARG_PARAM2, param2)
                 }
             }
+
+        const val username = "USERNAME"
+        const val password = "PASSWORD"
     }
 }

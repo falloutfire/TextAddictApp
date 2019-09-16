@@ -54,9 +54,8 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
-
     //internet connection
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.1'
     // parser
     implementation 'com.github.falloutfire:htmlparser:0.2.2'
 

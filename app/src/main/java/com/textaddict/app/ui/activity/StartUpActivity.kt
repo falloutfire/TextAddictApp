@@ -19,18 +19,31 @@ class StartUpActivity : AppCompatActivity() {
 
     private var fragment: Fragment? = null
     private lateinit var pref: SharedPreferences
+    private lateinit var countDownTimer: CountDownTimer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start_up)
 
-        object : CountDownTimer(SPLASH_TIME_OUT, 1000) {
-            override fun onFinish() {
-                pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
-                val intent = Intent(this@StartUpActivity, MainActivity::class.java)
+        pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
+        val intent = Intent(this@StartUpActivity, MainActivity::class.java)
 
+        if (!pref.contains(APP_PREFERENCES_USER_ID)) {
+            fragment = LoginFragment.newInstance("", "")
+            if (savedInstanceState == null) {
+                supportFragmentManager.beginTransaction()
+                    .add(
+                        R.id.frame_enter_container,
+                        fragment!!,
+                        null
+                    ).commitAllowingStateLoss()
+            }
+            intent.putExtra(USER_ID, pref.getInt(APP_PREFERENCES_USER_ID, 0))
+        }
+
+        countDownTimer = object : CountDownTimer(SPLASH_TIME_OUT, 1000) {
+            override fun onFinish() {
                 if (pref.contains(APP_PREFERENCES_USER_ID)) {
-                    // TODO add login screen and save user in pref
                     intent.putExtra(USER_ID, pref.getLong(APP_PREFERENCES_USER_ID, 0))
                     startActivity(
                         intent
@@ -46,34 +59,18 @@ class StartUpActivity : AppCompatActivity() {
                         )
                     )
                     appIconImageView.setImageResource(R.mipmap.ic_launcher)
-
                     startAnimation()
-
-                    fragment = LoginFragment.newInstance("", "")
-                    if (savedInstanceState == null) {
-                        supportFragmentManager.beginTransaction()
-                            .add(
-                                R.id.frame_enter_container,
-                                fragment!!,
-                                null
-                            )/*.addToBackStack(fragmentLogin)*/.commitAllowingStateLoss()
-                    } else {
-                        supportFragmentManager.beginTransaction()
-                            .add(R.id.frame_enter_container, fragment!!, null).commit()
-                    }
-                    intent.putExtra(USER_ID, pref.getInt(APP_PREFERENCES_USER_ID, 0))
                 }
             }
 
             override fun onTick(p0: Long) {}
-        }.start()
+        }
 
         var uiOptions = start_up_layout.systemUiVisibility
         uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
         start_up_layout.systemUiVisibility = uiOptions
-
     }
 
     private fun startAnimation() {
@@ -82,57 +79,44 @@ class StartUpActivity : AppCompatActivity() {
             y(110f)
             duration = 1000
         }.setListener(object : Animator.AnimatorListener {
-            override fun onAnimationRepeat(p0: Animator?) {
-
+            override fun onAnimationRepeat(animator: Animator?) {
             }
 
-            override fun onAnimationEnd(p0: Animator?) {
+            override fun onAnimationEnd(animator: Animator?) {
                 frame_enter_container.visibility = View.VISIBLE
             }
 
-            override fun onAnimationCancel(p0: Animator?) {
-
+            override fun onAnimationCancel(animator: Animator?) {
+                frame_enter_container.visibility = View.VISIBLE
             }
 
-            override fun onAnimationStart(p0: Animator?) {
-
+            override fun onAnimationStart(animator: Animator?) {
             }
         })
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        if (hasFocus) {
+            countDownTimer.start()
+        }
     }
 
     fun openSignUpFragment() {
         fragment = SignUpFragment.newInstance("", "")
         supportFragmentManager.beginTransaction()
             .replace(R.id.frame_enter_container, fragment!!, null)
-            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)/*.addToBackStack(
-                fragmentSignUp
-            )*/.commit()
+            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).commit()
     }
 
     fun openLoginFragment() {
         fragment = LoginFragment.newInstance("", "")
         supportFragmentManager.beginTransaction()
             .replace(R.id.frame_enter_container, fragment!!, null)
-            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)/*.addToBackStack(
-                fragmentLogin
-            )*/.commit()
-    }
-
-    private fun startMainActivity(intent: Intent) {
-        // TODO create and check db connection
-        /*Handler().postDelayed(
-            {
-                startActivity(
-                    intent,
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
-                )
-                finish()
-            }, SPLASH_TIME_OUT
-        )*/
+            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).commit()
     }
 
     companion object {
-        val SPLASH_TIME_OUT = 4000L
+        val SPLASH_TIME_OUT = 3000L
         var USER_ID = "USER_ID"
 
         // имя файла настроек
