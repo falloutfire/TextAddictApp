@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.adapter.ArticleViewAdapter
@@ -68,19 +67,15 @@ class ArticleListFragment : Fragment() {
             }
         })
 
-/*        viewModel.articles.observe(this, Observer { value ->
-            value?.let { adapter.setArticles(it) }
-        })*/
-
         subscribeUi(viewModel.articles)
-        val fabButton: FloatingActionButton = view!!.findViewById(R.id.floatingActionButton)
+        /*val fabButton: FloatingActionButton = view!!.findViewById(R.id.floatingActionButton)
         fabButton.setOnClickListener {
             viewModel.addData(userId)
             //viewModel.setData()
             subscribeUi(viewModel.articles)
             Log.e("test", "fab")
             Log.e("userId", viewModel.articles.value?.get(0)?.userId.toString())
-        }
+        }*/
     }
 
     private fun subscribeUi(liveData: LiveData<List<Article>>) {
