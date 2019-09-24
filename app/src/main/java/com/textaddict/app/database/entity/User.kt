@@ -15,3 +15,7 @@ data class User(
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
 }
+
+class UserLogin(var username: String, var password: String)
+
+class UserToken(var accessToken: String, var refreshToken: String)

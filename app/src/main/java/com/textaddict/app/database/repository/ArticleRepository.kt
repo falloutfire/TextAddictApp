@@ -19,9 +19,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
 
     suspend fun refreshListArticle() {
         return withContext(Dispatchers.IO) {
-            // TODO set request to server
-            //val result = network.fetchNewWelcome().await()
-            //articleDao.insertTitle(Title(result))
+
         }
     }
 

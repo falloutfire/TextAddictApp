@@ -5,8 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 abstract class AppViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -14,8 +13,11 @@ abstract class AppViewModel(application: Application) : AndroidViewModel(applica
     val spinner: LiveData<Boolean>
         get() = _spinner
 
+    private var job = SupervisorJob()
+    private var scope: CoroutineScope = viewModelScope + job
+
     fun launchDataLoad(block: suspend () -> Unit): Job {
-        return viewModelScope.launch {
+        return scope.launch {
             try {
                 _spinner.value = true
                 block()

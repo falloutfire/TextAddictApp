@@ -93,6 +93,26 @@ class LoginFragment : Fragment(), View.OnClickListener {
             }
         })
 
+        viewModel.test.observe(this, Observer { value ->
+            value.let {
+                if (value) {
+                    Log.e("test", "test pls get back")
+                } else {
+                    Log.e("test", "test pls get back12314")
+                }
+            }
+        })
+
+        viewModel.newsLiveData.observe(this, Observer { value ->
+            value.let {
+                if (value) {
+                    Log.e("test", "test pls get back")
+                } else {
+                    Log.e("test", "test pls get back12314")
+                }
+            }
+        })
+
         view.findViewById<Button>(R.id.login_button).setOnClickListener(this)
         view.findViewById<TextView>(R.id.signUpButton).setOnClickListener(this)
         return view
@@ -114,7 +134,9 @@ class LoginFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickLogin() {
-        viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString(), pref)
+        //viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString(), pref)
+        //viewModel.checkNet(username_editText.text.toString(), password_editText.text.toString())
+        viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString())
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
