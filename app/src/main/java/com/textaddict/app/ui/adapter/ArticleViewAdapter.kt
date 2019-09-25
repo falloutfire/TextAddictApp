@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.Nullable
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.fragment.ArticleListFragment.OnListFragmentInteractionListener
@@ -21,7 +23,7 @@ class ArticleViewAdapter internal constructor(
 ) : RecyclerView.Adapter<ArticleViewAdapter.ViewHolder>() {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
-    private var articles = emptyList<Article>()
+    private var articles = ArrayList<Article>()
     private val mOnClickListener: View.OnClickListener
 
     init {
@@ -58,8 +60,13 @@ class ArticleViewAdapter internal constructor(
     override fun getItemCount(): Int = articles.size
 
     internal fun setArticles(articles: List<Article>) {
-        this.articles = articles
-        notifyDataSetChanged()
+        val diffCallback = ArticleListDiffUtilCallback(this.articles, articles)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        this.articles.clear()
+        this.articles.addAll(articles)
+
+        diffResult.dispatchUpdatesTo(this)
     }
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
@@ -71,4 +78,29 @@ class ArticleViewAdapter internal constructor(
             return super.toString() + " '" + mDomainView.text + "'"
         }
     }
+}
+
+class ArticleListDiffUtilCallback(private val oldList: List<Article>, private val newList: List<Article>) :
+    DiffUtil.Callback() {
+
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return oldList[oldItemPosition].fullPath === newList[newItemPosition].fullPath
+    }
+
+    override fun getOldListSize(): Int = oldList.size
+
+    override fun getNewListSize(): Int = newList.size
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val (title1, _, fullPath1) = oldList[oldItemPosition]
+        val (title2, _, fullPath2) = newList[newItemPosition]
+
+        return title1 == title2
+    }
+
+    @Nullable
+    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+        return super.getChangePayload(oldItemPosition, newItemPosition)
+    }
+
 }

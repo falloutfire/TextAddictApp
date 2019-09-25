@@ -9,6 +9,7 @@ import com.textaddict.app.database.entity.Article
 import com.textaddict.app.database.entity.User
 import com.textaddict.app.database.repository.ArticleRepository
 import com.textaddict.app.database.repository.UserRepository
+import com.textaddict.app.network.ArticleApiService
 import com.textaddict.app.viewmodel.AppViewModel
 
 class ProfileViewModel(application: Application) : AppViewModel(application) {
@@ -26,13 +27,13 @@ class ProfileViewModel(application: Application) : AppViewModel(application) {
         val articleDao = AppDatabase.getDatabase(application, viewModelScope).articleDao()
         val userDao = AppDatabase.getDatabase(application, viewModelScope).userDao()
         articleRepository = ArticleRepository(articleDao)
-        userRepository = UserRepository(userDao)
+        userRepository = UserRepository(userDao, ArticleApiService.userService)
         countPages = articleRepository.articles
     }
 
-    fun getUser() {
+    fun getUser(userId: Long) {
         launchDataLoad {
-            val user = userRepository.getUserByUsername("Man")
+            val user = userRepository.getUserById(userId)
             _user.value = user
         }
     }

@@ -1,6 +1,7 @@
 package com.textaddict.app.ui.activity
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
+import com.textaddict.app.ui.activity.StartUpActivity.Companion.APP_PREFERENCES
 import com.textaddict.app.ui.fragment.ArchiveFragment
 import com.textaddict.app.ui.fragment.ArticleListFragment
 import com.textaddict.app.ui.fragment.ProfileFragment
@@ -25,6 +27,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
     private var fragmentProfile: Fragment? = null
     private var fragmentArticleList: Fragment? = null
     private var userId: Long = 1
+    private lateinit var pref: SharedPreferences
 
     private val onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
@@ -50,7 +53,8 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
             }
             R.id.navigation_person -> {
                 if (fragmentProfile == null) {
-                    fragmentProfile = ProfileFragment.newInstance("", "")
+                    fragmentProfile =
+                        ProfileFragment.newInstance(pref.getLong(StartUpActivity.APP_PREFERENCES_USER_ID, 0), "")
                 }
                 loadFragment(fragmentProfile!!)
                 return@OnNavigationItemSelectedListener true
@@ -73,6 +77,8 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
             supportFragmentManager.beginTransaction()
                 .add(R.id.frame_container, fragmentArticles!!, null).commit()
         }
+
+        pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
     }
 
     override fun onListFragmentInteraction(item: Article?) {

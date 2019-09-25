@@ -26,7 +26,7 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class ProfileFragment : Fragment() {
-    private var param1: String? = null
+    private var param1: Long? = null
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
 
@@ -35,7 +35,7 @@ class ProfileFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
+            param1 = it.getLong(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
     }
@@ -61,7 +61,7 @@ class ProfileFragment : Fragment() {
             }
         })
 
-        viewModel.getUser()
+        viewModel.getUser(param1!!)
 
         return view
     }
@@ -108,10 +108,10 @@ class ProfileFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(param1: Long, param2: String) =
             ProfileFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
+                    putLong(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
                 }
             }

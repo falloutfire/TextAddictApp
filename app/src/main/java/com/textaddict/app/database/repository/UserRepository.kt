@@ -1,43 +1,49 @@
 package com.textaddict.app.database.repository
 
 import android.content.SharedPreferences
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.textaddict.app.database.dao.UserDao
 import com.textaddict.app.database.entity.User
 import com.textaddict.app.database.entity.UserLogin
-import com.textaddict.app.database.entity.UserToken
 import com.textaddict.app.network.BaseRepository
 import com.textaddict.app.network.service.UserService
 import com.textaddict.app.ui.activity.StartUpActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-
 class UserRepository(private val userDao: UserDao, private val apiInterface: UserService) : BaseRepository() {
 
-    suspend fun loginUserInServer(username: String, userPassword: String): LiveData<UserToken> {
-        val token = MutableLiveData<UserToken>()
+    suspend fun loginUserInServer(username: String, userPassword: String): Boolean {
+        val token = MutableLiveData<Boolean>()
 
         val login = UserLogin(username, userPassword)
 
-        val call = safeApiCall(
+        val call = safeApiResponse(
             call = {
                 apiInterface.loginUserAsync(login).await()
             },
             error = "Error fetching user"
         )
-        token.value = call
 
-        return token
+        return call.code() == 200
     }
 
     suspend fun getUserFromServer(username: String, userPassword: String, pref: SharedPreferences): Boolean =
         withContext(Dispatchers.IO) {
 
-            loginUserInServer(username, userPassword)
+            /* val response = loginUserInServer(username, userPassword)
+             if (response) {
+                 // todo get userdetails from server
+                 userDao.insertUser(User(username, "email", userPassword))
+
+                 val user = userDao.getUserByUsername(username)
+                 val editor = pref.edit()
+                 editor.putLong(StartUpActivity.APP_PREFERENCES_USER_ID, user!!.id)
+                 editor.apply()
+                 return@withContext true*/
 
             val user = userDao.getUserByUsername(username)
+            // todo get userdetails from server
 
             if (user?.let {
                     return@let it.userPassword == userPassword
@@ -52,6 +58,9 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
             } else {
                 false
             }
+            /* } else {
+                 return@withContext false
+             }*/
         }
 
     suspend fun getUserById(id: Long): User? {

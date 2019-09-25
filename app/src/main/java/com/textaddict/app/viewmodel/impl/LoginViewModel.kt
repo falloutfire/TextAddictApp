@@ -22,8 +22,6 @@ class LoginViewModel(application: Application) : AppViewModel(application) {
         get() = _test
     private var _test = MutableLiveData<Boolean>()
 
-    val newsLiveData = MutableLiveData<Boolean>()
-
     init {
         val userDao = AppDatabase.getDatabase(application, viewModelScope).userDao()
         repository = UserRepository(userDao, ArticleApiService.userService)
@@ -31,11 +29,13 @@ class LoginViewModel(application: Application) : AppViewModel(application) {
 
     fun checkUser(userName: String, userPassword: String, pref: SharedPreferences) {
         launchDataLoad {
+            var user = false
             try {
-                val latestNews = repository.getUserFromServer(userName, userPassword, pref)
-                newsLiveData.postValue(latestNews)
+                user = repository.getUserFromServer(userName, userPassword, pref)
+                _login.postValue(user)
             } catch (e: Exception) {
                 Log.e("Exception", e.message)
+                e.printStackTrace()
             }
         }
     }

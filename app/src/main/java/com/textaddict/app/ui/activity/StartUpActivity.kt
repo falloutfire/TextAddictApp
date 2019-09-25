@@ -1,6 +1,7 @@
 package com.textaddict.app.ui.activity
 
 import android.animation.Animator
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -20,10 +21,15 @@ class StartUpActivity : AppCompatActivity() {
     private var fragment: Fragment? = null
     private lateinit var pref: SharedPreferences
     private lateinit var countDownTimer: CountDownTimer
+    private lateinit var progressDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start_up)
+
+        progressDialog = ProgressDialog(this)
+        progressDialog.isIndeterminate = true
+        progressDialog.setMessage("Checking Account...")
 
         pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
         val intent = Intent(this@StartUpActivity, MainActivity::class.java)
@@ -113,6 +119,14 @@ class StartUpActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.frame_enter_container, fragment!!, null)
             .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).commit()
+    }
+
+    fun openProgressDialog() {
+        progressDialog.show()
+    }
+
+    fun hideProgressDialog() {
+        progressDialog.hide()
     }
 
     companion object {

@@ -124,7 +124,7 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
     }
 
     private fun setShareActionIntent(text: String) {
-        val intent = Intent(Intent.ACTION_SEND)
+        val intent = Intent(Intent.ACTION_SENDTO)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_TEXT, text)
         shareActionProvider.setShareIntent(intent)

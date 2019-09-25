@@ -43,7 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
                 ).addCallback(AppDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
-                populateDatabase(instance.userDao(), instance.articleDao())
+                //populateDatabase(instance.userDao(), instance.articleDao())
                 return instance
             }
         }
@@ -65,23 +65,24 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onOpen(db)
                 INSTANCE?.let { database ->
                     scope.launch(Dispatchers.IO) {
-                        //populateDatabase(database.userDao(), database.articleDao())
+                        populateDatabase(database.userDao(), database.articleDao())
                     }
                 }
             }
         }
 
-        fun populateDatabase(userDao: UserDao, articleDao: ArticleDao) {
+        private fun populateDatabase(userDao: UserDao, articleDao: ArticleDao) {
             runBlocking(Dispatchers.IO) {
-                if (userDao.getUserByUsername("Man") == null) {
-                    userDao.insertUser(User("Man", "email@mail.com", "password"))
+                if (userDao.getUserByUsername("bob") == null) {
+                    userDao.insertUser(User("bob", "email@mail.com", "1234"))
                 }
 
                 if (articleDao.loadAllArticleCheck().isEmpty()) {
-                    val user = userDao.getUserByUsername("Man")
-                    val list: List<Article> = DataGenerator().generateArticles(user!!.id)
-                    for (i in list) {
-                        articleDao.insertArticle(i)
+                    userDao.getUserByUsername("bob")?.let {
+                        val list: List<Article> = DataGenerator().generateArticles(it.id)
+                        for (i in list) {
+                            articleDao.insertArticle(i)
+                        }
                     }
                 }
             }

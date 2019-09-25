@@ -26,13 +26,14 @@ open class BaseRepository {
             Output.Error(IOException("OOps .. Something went wrong due to  $error"))
     }
 
-    suspend fun safeApiResponse(call: suspend () -> okhttp3.Response, error: String): Output<okhttp3.Response> {
+    suspend fun <T : Any> safeApiResponse(call: suspend () -> Response<T?>, error: String): Response<T?> {
         val response = call.invoke()
         return if (response.isSuccessful) {
             Log.e("Success", response.code().toString())
-            Output.Success(response)
+            response
         } else {
             Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+            response
         }
     }
 }

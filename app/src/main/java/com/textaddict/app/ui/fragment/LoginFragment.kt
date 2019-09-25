@@ -1,6 +1,5 @@
 package com.textaddict.app.ui.fragment
 
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -31,7 +30,6 @@ class LoginFragment : Fragment(), View.OnClickListener {
     private lateinit var viewModel: LoginViewModel
     private lateinit var pref: SharedPreferences
     private lateinit var loginButton: Button
-    private lateinit var progressDialog: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,9 +46,6 @@ class LoginFragment : Fragment(), View.OnClickListener {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_login, container, false)
         loginButton = view.findViewById(R.id.login_button)
-        progressDialog = ProgressDialog(
-            activity
-        )
 
         if (savedInstanceState != null) {
             username_editText.text = savedInstanceState.getString(username) as Editable
@@ -65,12 +60,10 @@ class LoginFragment : Fragment(), View.OnClickListener {
             value.let {
                 if (value) {
                     login_button.isEnabled = false
-                    progressDialog.isIndeterminate = true
-                    progressDialog.setMessage("Checking Account...")
-                    progressDialog.show()
+                    (activity as StartUpActivity).openProgressDialog()
                 } else {
                     Handler().postDelayed({
-                        progressDialog.hide()
+                        (activity as StartUpActivity).hideProgressDialog()
                         login_button.isEnabled = true
                     }, 1500)
                 }
@@ -89,26 +82,6 @@ class LoginFragment : Fragment(), View.OnClickListener {
                     startActivity(intent)
                 } else {
                     Log.e("login", "invalid")
-                }
-            }
-        })
-
-        viewModel.test.observe(this, Observer { value ->
-            value.let {
-                if (value) {
-                    Log.e("test", "test pls get back")
-                } else {
-                    Log.e("test", "test pls get back12314")
-                }
-            }
-        })
-
-        viewModel.newsLiveData.observe(this, Observer { value ->
-            value.let {
-                if (value) {
-                    Log.e("test", "test pls get back")
-                } else {
-                    Log.e("test", "test pls get back12314")
                 }
             }
         })
@@ -134,9 +107,7 @@ class LoginFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickLogin() {
-        //viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString(), pref)
-        //viewModel.checkNet(username_editText.text.toString(), password_editText.text.toString())
-        viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString())
+        viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString(), pref)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

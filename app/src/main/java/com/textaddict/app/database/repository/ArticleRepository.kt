@@ -36,6 +36,19 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
         }
     }
 
+    suspend fun addArticleInDatabase(url: String, userId: Long) {
+        return withContext(Dispatchers.IO) {
+            val article = Article(
+                "Baeldung test",
+                DataGenerator().getHost(url),
+                url,
+                Date(System.currentTimeMillis()),
+                null, archieve = false, favorite = false, userId = userId
+            )
+            articleDao.insertArticle(article)
+        }
+    }
+
     suspend fun getArticleByIdAndUrl(id: Long, url: String): String? {
         return withContext(Dispatchers.IO) {
             try {
