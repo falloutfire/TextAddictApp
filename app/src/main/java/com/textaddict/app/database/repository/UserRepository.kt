@@ -6,6 +6,7 @@ import com.textaddict.app.database.dao.UserDao
 import com.textaddict.app.database.entity.User
 import com.textaddict.app.database.entity.UserLogin
 import com.textaddict.app.network.BaseRepository
+import com.textaddict.app.network.ResultLogin
 import com.textaddict.app.network.service.UserService
 import com.textaddict.app.ui.activity.StartUpActivity
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,7 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
         return call.code() == 200
     }
 
-    suspend fun getUserFromServer(username: String, userPassword: String, pref: SharedPreferences): Boolean =
+    suspend fun getUserFromServer(username: String, userPassword: String, pref: SharedPreferences): ResultLogin =
         withContext(Dispatchers.IO) {
 
             /* val response = loginUserInServer(username, userPassword)
@@ -54,9 +55,10 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
                 editor.putLong(StartUpActivity.APP_PREFERENCES_USER_ID, user.id)
                 editor.apply()
                 // TODO update user in db
-                true
+                return@withContext ResultLogin.Success
             } else {
-                false
+                val e = Exception()
+                return@withContext ResultLogin.Error(message = "bad username or password", exception = e)
             }
             /* } else {
                  return@withContext false

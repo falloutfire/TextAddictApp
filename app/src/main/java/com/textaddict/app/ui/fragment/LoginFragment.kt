@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
+import com.textaddict.app.network.ResultLogin
 import com.textaddict.app.ui.activity.MainActivity
 import com.textaddict.app.ui.activity.StartUpActivity
 import com.textaddict.app.viewmodel.impl.LoginViewModel
@@ -70,9 +71,9 @@ class LoginFragment : Fragment(), View.OnClickListener {
             }
         })
 
-        viewModel.login.observe(this, Observer { value ->
+        viewModel.resultLogin.observe(this, Observer { value ->
             value.let {
-                if (value) {
+                if (value == ResultLogin.Success) {
                     Log.e("login", "complete")
                     val intent = Intent(activity, MainActivity::class.java)
                     intent.putExtra(
@@ -81,6 +82,7 @@ class LoginFragment : Fragment(), View.OnClickListener {
                     )
                     startActivity(intent)
                 } else {
+                    (activity as StartUpActivity).openErrorFragment((value as ResultLogin.Error).message)
                     Log.e("login", "invalid")
                 }
             }

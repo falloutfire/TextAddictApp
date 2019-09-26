@@ -93,4 +93,11 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
             .replace(R.id.frame_container, fragment, null).addToBackStack(null).commit()
     }
 
+    fun logoutFromApp() {
+        pref.edit().remove(StartUpActivity.APP_PREFERENCES_USER_ID).apply()
+        val intent = Intent(this, StartUpActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
 }

@@ -43,7 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
                 ).addCallback(AppDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
-                //populateDatabase(instance.userDao(), instance.articleDao())
+                populateDatabase(instance.userDao(), instance.articleDao())
                 return instance
             }
         }
@@ -65,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onOpen(db)
                 INSTANCE?.let { database ->
                     scope.launch(Dispatchers.IO) {
-                        populateDatabase(database.userDao(), database.articleDao())
+                        //populateDatabase(database.userDao(), database.articleDao())
                     }
                 }
             }

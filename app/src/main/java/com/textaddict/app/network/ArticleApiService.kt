@@ -38,7 +38,7 @@ object ArticleApiService {
 
         return Retrofit.Builder()
             .baseUrl(HTTPS_API_TEXTADDICT_URL)
-            .addConverterFactory(nullOnEmptyConverterFactory)
+            //.addConverterFactory(nullOnEmptyConverterFactory)
             .addConverterFactory(GsonConverterFactory.create())
             .client(httpClient.build())
             .build()

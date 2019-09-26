@@ -4,3 +4,8 @@ sealed class Output<out T : Any> {
     data class Success<out T : Any>(val output: T) : Output<T>()
     data class Error(val exception: Exception) : Output<Nothing>()
 }
+
+sealed class ResultLogin {
+    object Success : ResultLogin()
+    class Error(val message: String, val exception: Exception) : ResultLogin()
+}

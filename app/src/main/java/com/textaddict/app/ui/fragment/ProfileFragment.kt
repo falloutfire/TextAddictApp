@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
+import com.textaddict.app.ui.activity.MainActivity
 import com.textaddict.app.viewmodel.impl.ProfileViewModel
 import kotlinx.android.synthetic.main.fragment_profile.*
 
@@ -25,7 +27,8 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  *
  */
-class ProfileFragment : Fragment() {
+class ProfileFragment : Fragment(), View.OnClickListener {
+
     private var param1: Long? = null
     private var param2: String? = null
     private var listener: OnFragmentInteractionListener? = null
@@ -63,6 +66,8 @@ class ProfileFragment : Fragment() {
 
         viewModel.getUser(param1!!)
 
+        view.findViewById<Button>(R.id.log_out_button).setOnClickListener(this)
+
         return view
     }
 
@@ -70,6 +75,20 @@ class ProfileFragment : Fragment() {
     fun onButtonPressed(uri: Uri) {
         listener?.onFragmentInteraction(uri)
     }
+
+    override fun onClick(view: View?) {
+        when (view?.id) {
+            R.id.log_out_button -> {
+                onClickLogout()
+            }
+        }
+    }
+
+    private fun onClickLogout() {
+        // todo delete articles and users
+        (activity as MainActivity).logoutFromApp()
+    }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

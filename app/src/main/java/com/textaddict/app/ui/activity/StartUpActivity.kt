@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.textaddict.app.R
+import com.textaddict.app.ui.fragment.ErrorDialogFragment
 import com.textaddict.app.ui.fragment.LoginFragment
 import com.textaddict.app.ui.fragment.SignUpFragment
 import kotlinx.android.synthetic.main.activity_start_up.*
@@ -127,6 +128,11 @@ class StartUpActivity : AppCompatActivity() {
 
     fun hideProgressDialog() {
         progressDialog.hide()
+    }
+
+    fun openErrorFragment(message: String) {
+        val error = ErrorDialogFragment(message)
+        error.show(supportFragmentManager, "ErrorDialogFragment")
     }
 
     companion object {
