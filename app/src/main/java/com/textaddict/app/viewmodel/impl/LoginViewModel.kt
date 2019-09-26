@@ -31,7 +31,7 @@ class LoginViewModel(application: Application) : AppViewModel(application) {
         var user: ResultLogin
         launchDataLoad {
             //try {
-                user = repository.getUserFromServer(userName, userPassword, pref)
+            user = repository.getUserFromServer(userName, userPassword, pref, getApplication())
             //_login.postValue(user)
             _resultLogin.postValue(user)
             /*} catch (e: Exception) {

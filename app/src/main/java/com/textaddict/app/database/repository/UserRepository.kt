@@ -1,7 +1,9 @@
 package com.textaddict.app.database.repository
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.MutableLiveData
+import com.textaddict.app.R
 import com.textaddict.app.database.dao.UserDao
 import com.textaddict.app.database.entity.User
 import com.textaddict.app.database.entity.UserLogin
@@ -29,7 +31,12 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
         return call.code() == 200
     }
 
-    suspend fun getUserFromServer(username: String, userPassword: String, pref: SharedPreferences): ResultLogin =
+    suspend fun getUserFromServer(
+        username: String,
+        userPassword: String,
+        pref: SharedPreferences,
+        context: Context
+    ): ResultLogin =
         withContext(Dispatchers.IO) {
 
             /* val response = loginUserInServer(username, userPassword)
@@ -58,7 +65,10 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
                 return@withContext ResultLogin.Success
             } else {
                 val e = Exception()
-                return@withContext ResultLogin.Error(message = "bad username or password", exception = e)
+                return@withContext ResultLogin.Error(
+                    message = context.resources.getString(R.string.bad_credentials),
+                    exception = e
+                )
             }
             /* } else {
                  return@withContext false
