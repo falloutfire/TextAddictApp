@@ -9,7 +9,9 @@ data class User(
     var username: String,
     var userEmail: String,
     var userPassword: String,
-    var imageProfile: Int = R.mipmap.ic_profile_label_round
+    var imageProfile: Int = R.mipmap.ic_profile_label_round//,
+    //todo achievements
+    //var readingTime: Long
 ) {
 
     @PrimaryKey(autoGenerate = true)

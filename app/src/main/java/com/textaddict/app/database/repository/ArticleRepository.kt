@@ -49,6 +49,18 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
         }
     }
 
+    suspend fun removeArticleInDataBase(articleId: Long) {
+        return withContext(Dispatchers.IO) {
+            articleDao.deleteArticle(articleId)
+        }
+    }
+
+    suspend fun restoreArticleInDataBase(article: Article) {
+        return withContext(Dispatchers.IO) {
+            articleDao.insertArticle(article)
+        }
+    }
+
     suspend fun getArticleByIdAndUrl(id: Long, url: String): String? {
         return withContext(Dispatchers.IO) {
             try {

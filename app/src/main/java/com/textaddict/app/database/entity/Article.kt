@@ -27,4 +27,11 @@ data class Article(
 
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
+    var status: Int = 1
+
+    enum class Status {
+        ACTIVE,
+        CHECKED,
+        DELETED
+    }
 }

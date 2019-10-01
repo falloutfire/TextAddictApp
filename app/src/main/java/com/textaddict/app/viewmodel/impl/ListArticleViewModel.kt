@@ -33,4 +33,16 @@ class ListArticleViewModel(application: Application) : AppViewModel(application)
             repository.addArticleInDatabase(userId)
         }
     }
+
+    fun restoreArticle(article: Article) {
+        launchDataLoad {
+            repository.restoreArticleInDataBase(article)
+        }
+    }
+
+    fun deleteArticle(id: Long) {
+        launchDataLoad {
+            repository.removeArticleInDataBase(id)
+        }
+    }
 }

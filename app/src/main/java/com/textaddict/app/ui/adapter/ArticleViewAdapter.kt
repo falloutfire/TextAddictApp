@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.fragment.ArticleListFragment.OnListFragmentInteractionListener
@@ -20,10 +21,10 @@ import java.text.SimpleDateFormat
 class ArticleViewAdapter internal constructor(
     context: Context,
     private val mListener: OnListFragmentInteractionListener?
-) : RecyclerView.Adapter<ArticleViewAdapter.ViewHolder>() {
+) : ListAdapter<Article, ArticleViewAdapter.ViewHolder>(DIFF_CALLBACK),
+    ItemTouchHelperAdapter<Article> {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
-    private var articles = ArrayList<Article>()
     private val mOnClickListener: View.OnClickListener
 
     init {
@@ -36,7 +37,7 @@ class ArticleViewAdapter internal constructor(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = articles[position]
+        val item = getItem(position)
         holder.mTitleView.text = item.title
         holder.mDomainView.text = item.domain
 
@@ -57,16 +58,33 @@ class ArticleViewAdapter internal constructor(
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int = articles.size
+    override fun removeItem(position: Int) {
+        actionArticle = getItem(position)
+        actionPosition = position
 
-    internal fun setArticles(articles: List<Article>) {
-        val diffCallback = ArticleListDiffUtilCallback(this.articles, articles)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        //articles.removeAt(position)
+        /*notifyItemRemoved(position)
+        notifyItemRangeChanged(position, articles.size)*/
+    }
 
-        this.articles.clear()
-        this.articles.addAll(articles)
+    override fun restoreItem() {
+        /*val diffCallback = ArticleListDiffUtilCallback(this.articles, viewModel.articles.value!!)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)*/
 
-        diffResult.dispatchUpdatesTo(this)
+        //viewModel.restoreArticle(actionArticle!!)
+        //this.articles.add(actionPosition!!, actionArticle!!)
+        /*notifyItemInserted(actionPosition!!)
+        notifyItemRangeChanged(actionPosition!!, articles.size)*/
+
+        //diffResult.dispatchUpdatesTo(this)
+    }
+
+    override fun archiveItem(position: Int) {
+
+    }
+
+    fun getItemFromList(position: Int): Article {
+        return getItem(position)
     }
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
@@ -78,9 +96,31 @@ class ArticleViewAdapter internal constructor(
             return super.toString() + " '" + mDomainView.text + "'"
         }
     }
+
+
+    companion object {
+        var actionArticle: Article? = null
+        var actionPosition: Int? = null
+
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Article>() {
+            override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
+                return oldItem.fullPath == newItem.fullPath
+            }
+
+            override fun areContentsTheSame(oldItem: Article, newItem: Article): Boolean {
+                val (title1, _, fullPath1) = oldItem
+                val (title2, _, fullPath2) = newItem
+
+                return title1 == title2
+            }
+        }
+    }
 }
 
-class ArticleListDiffUtilCallback(private val oldList: List<Article>, private val newList: List<Article>) :
+class ArticleListDiffUtilCallback(
+    private val oldList: List<Article>,
+    private val newList: List<Article>
+) :
     DiffUtil.Callback() {
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -102,5 +142,11 @@ class ArticleListDiffUtilCallback(private val oldList: List<Article>, private va
     override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
         return super.getChangePayload(oldItemPosition, newItemPosition)
     }
+}
 
+interface ItemTouchHelperAdapter<T : Any> {
+    fun removeItem(position: Int)
+    fun archiveItem(position: Int)
+    fun restoreItem()
+    //fun getItem(position: Int): T
 }
