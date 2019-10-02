@@ -19,7 +19,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
-import com.textaddict.app.ui.adapter.*
+import com.textaddict.app.ui.adapter.ArticleViewAdapter
+import com.textaddict.app.ui.adapter.OnSwipeTouchListener
+import com.textaddict.app.ui.adapter.TouchCallbackBuilder
 import com.textaddict.app.ui.drawableToBitmap
 import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 
@@ -27,14 +29,10 @@ import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 class ArticleListFragment : Fragment() {
 
     private var columnCount = 1
-    private var userId: Long = 1
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var viewModel: ListArticleViewModel
     private lateinit var adapter: ArticleViewAdapter
     private lateinit var spinner: ProgressBar
-    private lateinit var swipeControllerCallback: ListAdapterItemTouchHelperCallback<Article>
-    private lateinit var callback: ListItemTouchHelperCallback<Article>
-    private lateinit var uiRecyclerTouchListener: UiRecyclerTouchCallback<Article>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,44 +64,29 @@ class ArticleListFragment : Fragment() {
         val iconLeft = drawableToBitmap(dLeft)
         val iconRight = drawableToBitmap(dRight)
 
-        val touchCallback = TouchCallbackBuilder<Article>()
+        val touchCallback = TouchCallbackBuilder<Article>(adapter)
             .iconSize(dpToPx(iconSizeInDp))
             .leftBackgroundColor(Color.parseColor("#388E3C"))
             .leftIcon(iconLeft)
-            .leftTextSnackBar("archive")
+            .leftTextSnackBar("delete")
             .rightBackgroundColor(Color.parseColor("#D32F2F"))
             .rightIcon(iconRight)
-            .rightTextSnackBar("delete")
+            .rightTextSnackBar("archive")
             .isMarginAppbar(true)
             .view(view.findViewById(R.id.placeSnackBar))
             .onSwipeListener(object : OnSwipeTouchListener {
                 override fun onSwipeRight(vh: RecyclerView.ViewHolder) {
-                    //adapter.removeItem(vh.adapterPosition)
-                    //adapter.getItem(vh.adapterPosition).status = 0
-                    ArticleViewAdapter.actionArticle = adapter.getItemFromList(vh.adapterPosition)
-                    ArticleViewAdapter.actionPosition = vh.adapterPosition
-                    //viewModel.deleteArticle(adapter.getItemFromList(vh.adapterPosition).id)
-                    //adapter.submitList(viewModel.articles.value)
-                    viewModel.deleteArticle(adapter.getItemFromList(vh.adapterPosition).id)
-                    adapter.submitList(viewModel.articles.value)
 
-                    //adapter.notifyItemChanged(vh.adapterPosition)
+                    viewModel.deleteArticle(ArticleViewAdapter.actionArticle!!.id)
+
                 }
 
                 override fun onSwipeLeft(vh: RecyclerView.ViewHolder) {
-                    //(adapter as ItemTouchHelperAdapter<Article>).archiveItem(vh.adapterPosition)
-                    //adapter.removeItem(vh.adapterPosition)
-                    //adapter.getItem(vh.adapterPosition).status = 2
-                    ArticleViewAdapter.actionArticle = adapter.getItemFromList(vh.adapterPosition)
-                    ArticleViewAdapter.actionPosition = vh.adapterPosition
-                    viewModel.deleteArticle(adapter.getItemFromList(vh.adapterPosition).id)
-                    //adapter.notifyItemChanged(vh.adapterPosition)
-                    adapter.submitList(viewModel.articles.value)
+                    viewModel.deleteArticle(ArticleViewAdapter.actionArticle!!.id)
                 }
 
-                override fun onSwipeUndo(vh: RecyclerView.ViewHolder, direction: Int) {
+                /*override fun onSwipeUndo(vh: RecyclerView.ViewHolder, direction: Int) {
                     if (direction == ItemTouchHelper.LEFT) {
-                        //adapter.restoreItem()
                         val article = Article(
                             ArticleViewAdapter.actionArticle!!.title,
                             ArticleViewAdapter.actionArticle!!.domain,
@@ -115,14 +98,10 @@ class ArticleListFragment : Fragment() {
                             ArticleViewAdapter.actionArticle!!.userId
                         )
 
-                        /*adapter.notifyItemChanged(vh.adapterPosition)
-                        adapter.notifyDataSetChanged()*/
                         adapter.restoreItem()
-                        viewModel.restoreArticle(article)
-                        /*adapter.submitList(null)
-                        adapter.submitList(viewModel.articles.value)*/
+                        viewModel.restoreArticle(ArticleViewAdapter.actionArticle!!)
+                        adapter.notifyItemInserted(ArticleViewAdapter.actionPosition!!)
                     } else if (direction == ItemTouchHelper.RIGHT) {
-                        //adapter.restoreItem()
                         val article = Article(
                             ArticleViewAdapter.actionArticle!!.title,
                             ArticleViewAdapter.actionArticle!!.domain,
@@ -134,29 +113,18 @@ class ArticleListFragment : Fragment() {
                             ArticleViewAdapter.actionArticle!!.userId
                         )
 
-
                         adapter.restoreItem()
-                        viewModel.restoreArticle(article)
-                        /*adapter.submitList(null)
-                        adapter.submitList(viewModel.articles.value)*/
+                        viewModel.restoreArticle(ArticleViewAdapter.actionArticle!!)
+                        adapter.notifyItemInserted(ArticleViewAdapter.actionPosition!!)
                     }
-                }
+                }*/
 
             })
             .build()
 
         val helper = ItemTouchHelper(touchCallback)
         helper.attachToRecyclerView(recyclerView)
-
-        // Add animation
-        val animator = RecyclerItemAnimator(object : RecyclerItemAnimator.OnAnimationEndListener {
-            override fun onChangeEnd(newHolder: RecyclerView.ViewHolder) {
-                viewModel.deleteArticle(adapter.getItemFromList(newHolder.adapterPosition).id)
-                //adapter.notifyItemChanged(newHolder.adapterPosition)
-                //adapter.removeItem(newHolder.adapterPosition)
-            }
-        })
-        //recyclerView.itemAnimator = animator
+        recyclerView.itemAnimator = null
         subscribeUi(viewModel.articles)
     }
 
@@ -178,8 +146,6 @@ class ArticleListFragment : Fragment() {
                 spinner.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
-
-
     }
 
     private fun dpToPx(dp: Float): Float {
@@ -192,7 +158,7 @@ class ArticleListFragment : Fragment() {
         liveData.observe(this, Observer { listArticle ->
             listArticle?.let {
                 Log.e("update", it.size.toString())
-                adapter.submitList(it.toMutableList())
+                adapter.setList(it)
             }
         })
 

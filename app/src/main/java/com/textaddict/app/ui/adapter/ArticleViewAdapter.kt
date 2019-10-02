@@ -4,15 +4,17 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.Nullable
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.fragment.ArticleListFragment.OnListFragmentInteractionListener
 import kotlinx.android.synthetic.main.fragment_article_item.view.*
 import java.text.SimpleDateFormat
+
 
 /**
  * [RecyclerView.Adapter] that can display a [articles] and makes a call to the
@@ -21,11 +23,12 @@ import java.text.SimpleDateFormat
 class ArticleViewAdapter internal constructor(
     context: Context,
     private val mListener: OnListFragmentInteractionListener?
-) : ListAdapter<Article, ArticleViewAdapter.ViewHolder>(DIFF_CALLBACK),
+) : RecyclerView.Adapter<ArticleViewAdapter.ViewHolder>(),
     ItemTouchHelperAdapter<Article> {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private val mOnClickListener: View.OnClickListener
+    private val list: ArrayList<Article> = arrayListOf()
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -37,7 +40,7 @@ class ArticleViewAdapter internal constructor(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = getItem(position)
+        val item = list[position]
         holder.mTitleView.text = item.title
         holder.mDomainView.text = item.domain
 
@@ -58,13 +61,27 @@ class ArticleViewAdapter internal constructor(
         return ViewHolder(view)
     }
 
+    override fun getItemCount(): Int {
+        return list.size
+    }
+
+    fun setList(articles: List<Article>) {
+        val diffCallback = ArticleListDiffUtilCallback(this.list, articles)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        list.clear()
+        list.addAll(articles)
+        //notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
+    }
+
     override fun removeItem(position: Int) {
-        actionArticle = getItem(position)
+        actionArticle = list[position]
         actionPosition = position
 
-        //articles.removeAt(position)
-        /*notifyItemRemoved(position)
-        notifyItemRangeChanged(position, articles.size)*/
+        list.removeAt(position)
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, list.size)
     }
 
     override fun restoreItem() {
@@ -72,9 +89,9 @@ class ArticleViewAdapter internal constructor(
         val diffResult = DiffUtil.calculateDiff(diffCallback)*/
 
         //viewModel.restoreArticle(actionArticle!!)
-        //this.articles.add(actionPosition!!, actionArticle!!)
-        /*notifyItemInserted(actionPosition!!)
-        notifyItemRangeChanged(actionPosition!!, articles.size)*/
+        this.list.add(actionPosition!!, actionArticle!!)
+        notifyItemInserted(actionPosition!!)
+        notifyItemRangeChanged(actionPosition!!, list.size)
 
         //diffResult.dispatchUpdatesTo(this)
     }
@@ -84,10 +101,12 @@ class ArticleViewAdapter internal constructor(
     }
 
     fun getItemFromList(position: Int): Article {
-        return getItem(position)
+        return list[position]
     }
 
     inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
+        val mBackground: FrameLayout = mView.item_back
+        val mItemLayout: CardView? = mView.card_article_item
         val mTitleView: TextView = mView.item_article_title
         val mDomainView: TextView = mView.item_article_domain
         val mDateView: TextView = mView.item_article_date
@@ -124,7 +143,7 @@ class ArticleListDiffUtilCallback(
     DiffUtil.Callback() {
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition].fullPath === newList[newItemPosition].fullPath
+        return oldList[oldItemPosition].fullPath == newList[newItemPosition].fullPath
     }
 
     override fun getOldListSize(): Int = oldList.size
@@ -135,7 +154,7 @@ class ArticleListDiffUtilCallback(
         val (title1, _, fullPath1) = oldList[oldItemPosition]
         val (title2, _, fullPath2) = newList[newItemPosition]
 
-        return title1 == title2
+        return title1 == title2 && fullPath1 == fullPath2
     }
 
     @Nullable
