@@ -130,7 +130,7 @@ class StartUpActivity : AppCompatActivity() {
         progressDialog.hide()
     }
 
-    fun openErrorFragment(message: String) {
+    fun openErrorFragment(message: String?) {
         val error = ErrorDialogFragment(message)
         error.show(supportFragmentManager, "ErrorDialogFragment")
     }

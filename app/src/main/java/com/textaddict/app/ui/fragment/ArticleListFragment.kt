@@ -190,7 +190,7 @@ class ArticleListFragment : Fragment() {
     companion object {
 
         const val ARG_COLUMN_COUNT = "column-count"
-        const val ARG_USER_ID = "user-id"
+        const val ARG_USER_ID = "user-userId"
 
         @JvmStatic
         fun newInstance(columnCount: Int, userId: Long) =

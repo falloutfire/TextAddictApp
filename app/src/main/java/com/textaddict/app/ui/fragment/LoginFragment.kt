@@ -3,7 +3,6 @@ package com.textaddict.app.ui.fragment
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
 import android.text.Editable
 import android.util.Log
 import android.view.LayoutInflater
@@ -63,10 +62,8 @@ class LoginFragment : Fragment(), View.OnClickListener {
                     login_button.isEnabled = false
                     (activity as StartUpActivity).openProgressDialog()
                 } else {
-                    Handler().postDelayed({
-                        (activity as StartUpActivity).hideProgressDialog()
-                        login_button.isEnabled = true
-                    }, 1500)
+                    (activity as StartUpActivity).hideProgressDialog()
+                    login_button.isEnabled = true
                 }
             }
         })
@@ -81,6 +78,7 @@ class LoginFragment : Fragment(), View.OnClickListener {
                         pref.getLong(StartUpActivity.APP_PREFERENCES_USER_ID, 0)
                     )
                     startActivity(intent)
+                    activity?.finish()
                 } else {
                     (activity as StartUpActivity).openErrorFragment((value as ResultLogin.Error).message)
                     Log.e("login", "invalid")

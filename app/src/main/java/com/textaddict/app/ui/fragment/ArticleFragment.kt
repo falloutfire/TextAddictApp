@@ -58,7 +58,7 @@ class ArticleFragment : Fragment() {
         content_view = view.findViewById(R.id.fullscreen_content_web_view)
         //content_view.setOnClickListener { toggle() }
 
-        //val webView: WebView = findViewById(R.id.fullscreen_content_web_view)
+        //val webView: WebView = findViewById(R.userId.fullscreen_content_web_view)
         viewModel = ViewModelProvider(this).get(ArticleViewModel::class.java)
 
         // update the title when the [ListArticleViewModel.title] changes

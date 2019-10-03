@@ -7,8 +7,8 @@ import com.textaddict.app.database.entity.User
 @Dao
 interface UserDao {
 
-    @Query("select * from User where id = :id")
-    fun getUserById(id: Long): User?
+    @Query("select * from User where userId = :userId")
+    fun getUserById(userId: Long): User?
 
     @Query("select * from User where username = :username")
     fun getUserByUsername(username: String): User?
@@ -22,7 +22,7 @@ interface UserDao {
     @Update
     fun updateUser(user: User)
 
-    @Query("DELETE FROM User where id = :id")
-    fun deleteUser(id: Long)
+    @Query("DELETE FROM User where userId = :userId")
+    fun deleteUser(userId: Long)
 
 }

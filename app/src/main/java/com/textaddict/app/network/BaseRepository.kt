@@ -5,8 +5,8 @@ import retrofit2.Response
 import java.io.IOException
 
 open class BaseRepository {
-    suspend fun <T : Any> safeApiCall(call: suspend () -> Response<T?>, error: String): T? {
-        val result = newsApiOutput(call, error)
+    suspend fun <T : Any> safeApiCall(call: suspend () -> Response<T>, error: String): T? {
+        val result = loginApiOutput(call, error)
         var output: T? = null
         when (result) {
             is Output.Success ->
@@ -17,7 +17,10 @@ open class BaseRepository {
 
     }
 
-    private suspend fun <T : Any> newsApiOutput(call: suspend () -> Response<T?>, error: String): Output<T> {
+    private suspend fun <T : Any> loginApiOutput(
+        call: suspend () -> Response<T>,
+        error: String
+    ): Output<T> {
         val response = call.invoke()
         return if (response.isSuccessful) {
             Log.e("Success", response.code().toString())
@@ -26,7 +29,10 @@ open class BaseRepository {
             Output.Error(IOException("OOps .. Something went wrong due to  $error"))
     }
 
-    suspend fun <T : Any> safeApiResponse(call: suspend () -> Response<T?>, error: String): Response<T?> {
+    suspend fun <T : Any> safeApiResponse(
+        call: suspend () -> Response<T>,
+        error: String
+    ): Response<T> {
         val response = call.invoke()
         return if (response.isSuccessful) {
             Log.e("Success", response.code().toString())
@@ -36,4 +42,25 @@ open class BaseRepository {
             response
         }
     }
+
+    private suspend fun <T : Any> apiOutput(
+        call: suspend () -> Response<Result<T>>,
+        error: String
+    ): Output<Result<T>> {
+        val response = call.invoke()
+        return if (response.isSuccessful) {
+            Log.e("Success", response.code().toString())
+            if ((response.body() as Result).status != "error") {
+                Output.Success(response.body()!!)
+            } else {
+                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+            }
+        } else {
+            Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+        }
+    }
+
+    data class Result<T : Any>(var status: String, var message: T)
+
+    val ERROR = "error"
 }

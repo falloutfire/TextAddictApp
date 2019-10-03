@@ -7,16 +7,20 @@ import androidx.fragment.app.DialogFragment
 import com.textaddict.app.R
 
 
-class ErrorDialogFragment(var message: String) : DialogFragment() {
+class ErrorDialogFragment(var message: String?) : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
         val builder = AlertDialog.Builder(context!!)
-        builder.setMessage(message)
-            .setPositiveButton(R.string.ok) { dialog, id ->
-                dismiss()
-            }
-        /*.setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, id ->
+        if (message == null) {
+            builder.setMessage("Something wrong. PLease try later")
+        } else {
+            builder.setMessage(message)
+        }
+        builder.setPositiveButton(R.string.ok) { dialog, id ->
+            dismiss()
+        }
+        /*.setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, userId ->
             // User cancelled the dialog
         })*/
         // Create the AlertDialog object and return it

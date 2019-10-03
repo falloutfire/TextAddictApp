@@ -73,18 +73,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun populateDatabase(userDao: UserDao, articleDao: ArticleDao) {
             runBlocking(Dispatchers.IO) {
-                if (userDao.getUserByUsername("bob") == null) {
-                    userDao.insertUser(User("bob", "email@mail.com", "1234"))
-                }
+                /*if (userDao.getUserByUsername("bob") == null) {
+                    userDao.insertUser(User("bob", "email@mail.com", "1234", ))
+                }*/
 
-                if (articleDao.loadAllArticleCheck().isEmpty()) {
+                /*if (articleDao.loadAllArticleCheck().isEmpty()) {
                     userDao.getUserByUsername("bob")?.let {
-                        val list: List<Article> = DataGenerator().generateArticles(it.id)
+                        val list: List<Article> = DataGenerator().generateArticles(it.userId)
                         for (i in list) {
                             articleDao.insertArticle(i)
                         }
                     }
-                }
+                }*/
             }
 
         }

@@ -2,6 +2,7 @@ package com.textaddict.app.viewmodel.impl
 
 import android.app.Application
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -28,17 +29,17 @@ class LoginViewModel(application: Application) : AppViewModel(application) {
     }
 
     fun checkUser(userName: String, userPassword: String, pref: SharedPreferences) {
-        var user: ResultLogin
+        var user: ResultLogin? = null
         launchDataLoad {
-            //try {
+            try {
             user = repository.getUserFromServer(userName, userPassword, pref, getApplication())
             //_login.postValue(user)
             _resultLogin.postValue(user)
-            /*} catch (e: Exception) {
+            } catch (e: Exception) {
                 _resultLogin.postValue(user)
                 Log.e("Exception", e.message)
                 e.printStackTrace()
-            }*/
+            }
         }
     }
 }
