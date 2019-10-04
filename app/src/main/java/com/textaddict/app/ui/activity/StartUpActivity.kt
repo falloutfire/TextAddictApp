@@ -28,7 +28,7 @@ class StartUpActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start_up)
 
-        progressDialog = ProgressDialog(this)
+        progressDialog = ProgressDialog(this@StartUpActivity)
         progressDialog.isIndeterminate = true
         progressDialog.setMessage("Checking Account...")
 
@@ -123,11 +123,22 @@ class StartUpActivity : AppCompatActivity() {
     }
 
     fun openProgressDialog() {
+        progressDialog.create()
         progressDialog.show()
     }
 
     fun hideProgressDialog() {
-        progressDialog.hide()
+        progressDialog.cancel()
+    }
+
+    fun startMainActivity() {
+        val intent = Intent(this@StartUpActivity, MainActivity::class.java)
+        intent.putExtra(
+            USER_ID,
+            pref.getLong(APP_PREFERENCES_USER_ID, 0)
+        )
+        startActivity(intent)
+        finish()
     }
 
     fun openErrorFragment(message: String?) {

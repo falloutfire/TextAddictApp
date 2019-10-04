@@ -1,6 +1,5 @@
 package com.textaddict.app.ui.fragment
 
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
@@ -16,7 +15,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
 import com.textaddict.app.network.ResultLogin
-import com.textaddict.app.ui.activity.MainActivity
 import com.textaddict.app.ui.activity.StartUpActivity
 import com.textaddict.app.viewmodel.impl.LoginViewModel
 import kotlinx.android.synthetic.main.fragment_login.*
@@ -54,7 +52,10 @@ class LoginFragment : Fragment(), View.OnClickListener {
 
         viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
 
-        pref = activity!!.getSharedPreferences(StartUpActivity.APP_PREFERENCES, AppCompatActivity.MODE_PRIVATE)
+        pref = activity!!.getSharedPreferences(
+            StartUpActivity.APP_PREFERENCES,
+            AppCompatActivity.MODE_PRIVATE
+        )
 
         viewModel.spinner.observe(this, Observer { value ->
             value.let {
@@ -72,13 +73,8 @@ class LoginFragment : Fragment(), View.OnClickListener {
             value.let {
                 if (value == ResultLogin.Success) {
                     Log.e("login", "complete")
-                    val intent = Intent(activity, MainActivity::class.java)
-                    intent.putExtra(
-                        StartUpActivity.USER_ID,
-                        pref.getLong(StartUpActivity.APP_PREFERENCES_USER_ID, 0)
-                    )
-                    startActivity(intent)
-                    activity?.finish()
+                    viewModel.spinner.removeObservers(this)
+                    (activity as StartUpActivity).startMainActivity()
                 } else {
                     (activity as StartUpActivity).openErrorFragment((value as ResultLogin.Error).message)
                     Log.e("login", "invalid")
@@ -107,7 +103,11 @@ class LoginFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickLogin() {
-        viewModel.checkUser(username_editText.text.toString(), password_editText.text.toString(), pref)
+        viewModel.checkUser(
+            username_editText.text.toString(),
+            password_editText.text.toString(),
+            pref
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

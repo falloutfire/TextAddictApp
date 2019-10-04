@@ -20,12 +20,6 @@ class ErrorDialogFragment(var message: String?) : DialogFragment() {
         builder.setPositiveButton(R.string.ok) { dialog, id ->
             dismiss()
         }
-        /*.setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, userId ->
-            // User cancelled the dialog
-        })*/
-        // Create the AlertDialog object and return it
         return builder.create()
-
-        //return super.onCreateDialog(savedInstanceState)
     }
 }

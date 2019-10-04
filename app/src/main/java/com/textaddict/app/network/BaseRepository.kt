@@ -21,12 +21,16 @@ open class BaseRepository {
         call: suspend () -> Response<T>,
         error: String
     ): Output<T> {
-        val response = call.invoke()
-        return if (response.isSuccessful) {
-            Log.e("Success", response.code().toString())
-            Output.Success(response.body()!!)
-        } else
-            Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+        return try {
+            val response = call.invoke()
+            if (response.isSuccessful) {
+                Log.e("Success", response.code().toString())
+                Output.Success(response.body()!!)
+            } else
+                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+        } catch (e: Exception) {
+            Output.Error(Exception("OOps .. Something went wrong due to  $e"))
+        }
     }
 
     suspend fun <T : Any> safeApiResponse(

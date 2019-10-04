@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.textaddict.app.R
 import com.textaddict.app.ui.activity.StartUpActivity
+import kotlinx.android.synthetic.main.fragment_sign_up.*
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -24,6 +25,10 @@ class SignUpFragment : Fragment(), View.OnClickListener {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+
+    private var username: String = ""
+    private var password: String = ""
+    private var email: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +69,12 @@ class SignUpFragment : Fragment(), View.OnClickListener {
 
     private fun onClickSignUp() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(username, username_editText.text.toString())
+        outState.putString(password, password_editText.text.toString())
+        outState.putString(email, password_editText.text.toString())
     }
 
     companion object {
