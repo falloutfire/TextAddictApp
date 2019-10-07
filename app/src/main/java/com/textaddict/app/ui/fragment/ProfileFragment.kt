@@ -27,7 +27,7 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  *
  */
-class ProfileFragment : Fragment(), View.OnClickListener {
+class ProfileFragment : BaseFragment(), View.OnClickListener {
 
     private var param1: Long? = null
     private var param2: String? = null

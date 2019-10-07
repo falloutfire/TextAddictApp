@@ -15,28 +15,57 @@ import com.textaddict.app.viewmodel.AppViewModel
 class LoginViewModel(application: Application) : AppViewModel(application) {
 
     private val repository: UserRepository
-    val login: LiveData<Boolean>
-        get() = _login
-    private val _login = MutableLiveData<Boolean>()
 
     val resultLogin: LiveData<ResultLogin>
         get() = _resultLogin
     private val _resultLogin = MutableLiveData<ResultLogin>()
+
+    val resultSignUp: LiveData<ResultLogin>
+        get() = _resultSignUp
+    private val _resultSignUp = MutableLiveData<ResultLogin>()
 
     init {
         val userDao = AppDatabase.getDatabase(application, viewModelScope).userDao()
         repository = UserRepository(userDao, ArticleApiService.userService)
     }
 
-    fun checkUser(userName: String, userPassword: String, pref: SharedPreferences) {
+    fun loginUserInServer(userName: String, userPassword: String, pref: SharedPreferences) {
+        var user: ResultLogin? = null
+        launchDataLoad {
+            //try {
+            user = repository.loginUserInServer(userName, userPassword, pref, getApplication())
+            //_login.postValue(user)
+            _resultLogin.postValue(user)
+            /*} catch (e: Exception) {
+                user = ResultLogin.Error("login", e)
+                _resultLogin.postValue(user)
+                Log.e("Exception", e.message)
+                e.printStackTrace()
+            }*/
+        }
+        Log.e("Exception", user.toString())
+    }
+
+    fun signUpUserInServer(
+        userName: String,
+        userPassword: String,
+        userEmail: String,
+        pref: SharedPreferences
+    ) {
         var user: ResultLogin? = null
         launchDataLoad {
             try {
-            user = repository.getUserFromServer(userName, userPassword, pref, getApplication())
-            //_login.postValue(user)
-            _resultLogin.postValue(user)
+                user = repository.signUpUserFromServer(
+                    userName,
+                    userPassword,
+                    userEmail,
+                    pref,
+                    getApplication()
+                )
+                //_login.postValue(user)
+                _resultSignUp.postValue(user)
             } catch (e: Exception) {
-                _resultLogin.postValue(user)
+                _resultSignUp.postValue(user)
                 Log.e("Exception", e.message)
                 e.printStackTrace()
             }

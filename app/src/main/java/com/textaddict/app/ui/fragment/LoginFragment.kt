@@ -103,7 +103,7 @@ class LoginFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickLogin() {
-        viewModel.checkUser(
+        viewModel.loginUserInServer(
             username_editText.text.toString(),
             password_editText.text.toString(),
             pref

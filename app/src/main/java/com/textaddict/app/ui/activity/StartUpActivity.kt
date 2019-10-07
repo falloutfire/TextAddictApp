@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_start_up.*
 class StartUpActivity : AppCompatActivity() {
 
     private var fragment: Fragment? = null
+    private var isAnim = false
     private lateinit var pref: SharedPreferences
     private lateinit var countDownTimer: CountDownTimer
     private lateinit var progressDialog: ProgressDialog
@@ -33,7 +34,6 @@ class StartUpActivity : AppCompatActivity() {
         progressDialog.setMessage("Checking Account...")
 
         pref = getSharedPreferences(APP_PREFERENCES, MODE_PRIVATE)
-        val intent = Intent(this@StartUpActivity, MainActivity::class.java)
 
         if (!pref.contains(APP_PREFERENCES_USER_ID)) {
             fragment = LoginFragment.newInstance("", "")
@@ -45,17 +45,13 @@ class StartUpActivity : AppCompatActivity() {
                         null
                     ).commitAllowingStateLoss()
             }
-            intent.putExtra(USER_ID, pref.getInt(APP_PREFERENCES_USER_ID, 0))
         }
 
         countDownTimer = object : CountDownTimer(SPLASH_TIME_OUT, 1000) {
             override fun onFinish() {
+                isAnim = true
                 if (pref.contains(APP_PREFERENCES_USER_ID)) {
-                    intent.putExtra(USER_ID, pref.getLong(APP_PREFERENCES_USER_ID, 0))
-                    startActivity(
-                        intent
-                    )
-                    finish()
+                    startMainActivity()
                 } else {
                     appNameTextView.visibility = View.GONE
                     loadingProgressBar.visibility = View.GONE
@@ -72,6 +68,8 @@ class StartUpActivity : AppCompatActivity() {
 
             override fun onTick(p0: Long) {}
         }
+
+        countDownTimer.start()
 
         var uiOptions = start_up_layout.systemUiVisibility
         uiOptions = uiOptions or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -103,8 +101,9 @@ class StartUpActivity : AppCompatActivity() {
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
-        if (hasFocus) {
-            countDownTimer.start()
+        if (hasFocus && isAnim) {
+            appIconImageView.x = 50f
+            appIconImageView.y = 110f
         }
     }
 
@@ -132,12 +131,12 @@ class StartUpActivity : AppCompatActivity() {
     }
 
     fun startMainActivity() {
-        val intent = Intent(this@StartUpActivity, MainActivity::class.java)
-        intent.putExtra(
+        val mainIntent = Intent(this@StartUpActivity, MainActivity::class.java)
+        mainIntent.putExtra(
             USER_ID,
             pref.getLong(APP_PREFERENCES_USER_ID, 0)
         )
-        startActivity(intent)
+        startActivity(mainIntent)
         finish()
     }
 

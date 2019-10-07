@@ -1,14 +1,24 @@
 package com.textaddict.app.ui.fragment
 
+import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.Editable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
+import com.textaddict.app.network.ResultLogin
+import com.textaddict.app.ui.activity.MainActivity
 import com.textaddict.app.ui.activity.StartUpActivity
+import com.textaddict.app.viewmodel.impl.LoginViewModel
 import kotlinx.android.synthetic.main.fragment_sign_up.*
 
 private const val ARG_PARAM1 = "param1"
@@ -25,10 +35,9 @@ class SignUpFragment : Fragment(), View.OnClickListener {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-
-    private var username: String = ""
-    private var password: String = ""
-    private var email: String = ""
+    private lateinit var viewModel: LoginViewModel
+    private lateinit var pref: SharedPreferences
+    private lateinit var signUpButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +53,54 @@ class SignUpFragment : Fragment(), View.OnClickListener {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_sign_up, container, false)
-        val button = view.findViewById<Button>(R.id.signUp_button)
+        signUpButton = view.findViewById<Button>(R.id.signUp_button)
         val textView = view.findViewById<TextView>(R.id.loginBack_button)
 
-        button.setOnClickListener(this)
+        viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
+        pref = activity!!.getSharedPreferences(
+            StartUpActivity.APP_PREFERENCES,
+            AppCompatActivity.MODE_PRIVATE
+        )
+
+        viewModel.spinner.observe(this, Observer { value ->
+            value.let {
+                if (value) {
+                    signUpButton.isEnabled = false
+                    (activity as StartUpActivity).openProgressDialog()
+                } else {
+                    (activity as StartUpActivity).hideProgressDialog()
+                    signUpButton.isEnabled = true
+                }
+            }
+        })
+
+        viewModel.resultSignUp.observe(this, Observer { value ->
+            value.let {
+                if (value == ResultLogin.Success) {
+                    Log.e("login", "complete")
+                    viewModel.spinner.removeObservers(this)
+                    //(activity as StartUpActivity).startMainActivity()
+                    val intent = Intent(activity, MainActivity::class.java)
+                    intent.putExtra(
+                        StartUpActivity.USER_ID,
+                        pref.getLong(StartUpActivity.APP_PREFERENCES_USER_ID, 0)
+                    )
+                    startActivity(intent)
+                    activity?.finish()
+                } else {
+                    (activity as StartUpActivity).openErrorFragment((value as ResultLogin.Error).message)
+                    Log.e("login", "invalid")
+                }
+            }
+        })
+
+        if (savedInstanceState != null) {
+            username_editText.text = savedInstanceState.getString(username) as Editable
+            password_editText.text = savedInstanceState.getString(password) as Editable
+            email_editText.text = savedInstanceState.getString(email) as Editable
+        }
+
+        signUpButton.setOnClickListener(this)
         textView.setOnClickListener(this)
         return view
     }
@@ -68,13 +121,18 @@ class SignUpFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickSignUp() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        viewModel.signUpUserInServer(
+            username_editText.text.toString(),
+            password_editText.text.toString(),
+            email_editText.text.toString(),
+            pref
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString(username, username_editText.text.toString())
         outState.putString(password, password_editText.text.toString())
-        outState.putString(email, password_editText.text.toString())
+        outState.putString(email, email_editText.text.toString())
     }
 
     companion object {
@@ -94,5 +152,9 @@ class SignUpFragment : Fragment(), View.OnClickListener {
                     putString(ARG_PARAM2, param2)
                 }
             }
+
+        const val username = "USERNAME"
+        const val password = "PASSWORD"
+        const val email = "EMAIL"
     }
 }

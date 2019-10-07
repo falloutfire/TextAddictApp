@@ -20,4 +20,10 @@ class AddActivityViewModel(application: Application) : AppViewModel(application)
             repository.addArticleInDatabase(url, userId)
         }
     }
+
+    fun addArticleInStorage(url: String, siteName: String, userId: Long) {
+        launchDataLoad {
+            repository.addArticleInDatabase(url, siteName, userId)
+        }
+    }
 }

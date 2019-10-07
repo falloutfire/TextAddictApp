@@ -41,4 +41,6 @@
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
     <string name="bad_credentials">Incorrect  login or password.</string>
+    <string name="save_article">Save article</string>
+    <string name="url_site">URL site</string>
 </resources>

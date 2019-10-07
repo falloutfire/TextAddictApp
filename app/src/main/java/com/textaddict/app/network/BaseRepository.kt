@@ -1,12 +1,26 @@
 package com.textaddict.app.network
 
 import android.util.Log
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 open class BaseRepository {
     suspend fun <T : Any> safeApiCall(call: suspend () -> Response<T>, error: String): T? {
-        val result = loginApiOutput(call, error)
+        val result = safeApiResponse(call, error)
+        var output: T? = null
+        when (result) {
+            is Output.Success ->
+                output = result.output
+            is Output.Error -> Log.e("Error", "The $error and the ${result.exception}")
+        }
+        return output
+    }
+
+    suspend fun <T : Any> safeApiCallTest(call: suspend () -> Call<T>, error: String): T? {
+        val result = safeApiCallToServer(call, error)
         var output: T? = null
         when (result) {
             is Output.Success ->
@@ -33,17 +47,81 @@ open class BaseRepository {
         }
     }
 
+    suspend fun <T : Any> safeApiCallToServer(
+        call: suspend () -> Call<T>,
+        error: String
+    ): Output<T> {
+        var output: Output<T>? = null
+        call.invoke().enqueue(object : Callback<T> {
+            override fun onResponse(call: Call<T>, response: Response<T>) {
+                if (response.isSuccessful) {
+                    if ((response.body() is Result<*>)) {
+                        if ((response.body() as Result<*>).status == "error") {
+                            output =
+                                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                        } else {
+                            output = Output.Success(response.body()!!)
+                        }
+                    } else {
+                        output = Output.Success(response.body()!!)
+                    }
+                } else {
+                    Log.e("call", response.code().toString())
+                    output =
+                        Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                }
+            }
+
+            override fun onFailure(call: Call<T>, t: Throwable) {
+                if (t is SocketTimeoutException) {
+                    // "Connection Timeout";
+                    output = Output.Error(t)
+                    //Output.Error(SocketTimeoutException("OOps .. Something went wrong due to  $error, connection timeout"))
+                } else if (t is IOException) {
+                    // "Timeout";
+                    output = Output.Error(t)
+                    //Output.Error(SocketTimeoutException("OOps .. Something went wrong due to  $error, timeout"))
+                } else {
+                    //Call was cancelled by user
+                    if (call.isCanceled) {
+                        Log.e("Call", "Call was cancelled forcefully")
+                        output = Output.Error(t as Exception)
+                    } else {
+                        //Generic error handling
+                        Log.e("Call", "Network Error :: " + t.localizedMessage)
+                        output = Output.Error(t as Exception)
+                    }
+                }
+            }
+        })
+
+        return output!!
+    }
+
     suspend fun <T : Any> safeApiResponse(
         call: suspend () -> Response<T>,
         error: String
-    ): Response<T> {
-        val response = call.invoke()
-        return if (response.isSuccessful) {
-            Log.e("Success", response.code().toString())
-            response
-        } else {
+    ): Output<T> {
+        return try {
+            val response = call.invoke()
+            if (response.isSuccessful) {
+                if ((response.body() is Result<*>)) {
+                    if ((response.body() as Result<*>).status == "error") {
+                        Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                    } else {
+                        Output.Success(response.body()!!)
+                    }
+                } else
+                    Output.Success(response.body()!!)
+            } else {
+                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+            }
+        } catch (e: SocketTimeoutException) {
+            Output.Error(SocketTimeoutException("OOps .. Something went wrong due to  $error"))
+        } catch (e: IOException) {
             Output.Error(IOException("OOps .. Something went wrong due to  $error"))
-            response
+        } catch (e: Exception) {
+            Output.Error(Exception("OOps .. Something went wrong due to  $error"))
         }
     }
 

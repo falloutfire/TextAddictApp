@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -22,12 +21,13 @@ import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.adapter.ArticleViewAdapter
 import com.textaddict.app.ui.adapter.OnSwipeTouchListener
 import com.textaddict.app.ui.adapter.TouchCallbackBuilder
-import com.textaddict.app.ui.drawableToBitmap
+import com.textaddict.app.utils.drawableToBitmap
 import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 
 
-class ArticleListFragment : Fragment() {
+class ArticleListFragment : BaseFragment() {
 
+    //internal val ACTION_DASHBOARD = HOME_FRAGMENT + "action.dashboard"
     private var columnCount = 1
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var viewModel: ListArticleViewModel
@@ -84,41 +84,6 @@ class ArticleListFragment : Fragment() {
                 override fun onSwipeLeft(vh: RecyclerView.ViewHolder) {
                     viewModel.deleteArticle(ArticleViewAdapter.actionArticle!!.id)
                 }
-
-                /*override fun onSwipeUndo(vh: RecyclerView.ViewHolder, direction: Int) {
-                    if (direction == ItemTouchHelper.LEFT) {
-                        val article = Article(
-                            ArticleViewAdapter.actionArticle!!.title,
-                            ArticleViewAdapter.actionArticle!!.domain,
-                            ArticleViewAdapter.actionArticle!!.fullPath,
-                            ArticleViewAdapter.actionArticle!!.date,
-                            ArticleViewAdapter.actionArticle!!.content,
-                            ArticleViewAdapter.actionArticle!!.archieve,
-                            ArticleViewAdapter.actionArticle!!.favorite,
-                            ArticleViewAdapter.actionArticle!!.userId
-                        )
-
-                        adapter.restoreItem()
-                        viewModel.restoreArticle(ArticleViewAdapter.actionArticle!!)
-                        adapter.notifyItemInserted(ArticleViewAdapter.actionPosition!!)
-                    } else if (direction == ItemTouchHelper.RIGHT) {
-                        val article = Article(
-                            ArticleViewAdapter.actionArticle!!.title,
-                            ArticleViewAdapter.actionArticle!!.domain,
-                            ArticleViewAdapter.actionArticle!!.fullPath,
-                            ArticleViewAdapter.actionArticle!!.date,
-                            ArticleViewAdapter.actionArticle!!.content,
-                            ArticleViewAdapter.actionArticle!!.archieve,
-                            ArticleViewAdapter.actionArticle!!.favorite,
-                            ArticleViewAdapter.actionArticle!!.userId
-                        )
-
-                        adapter.restoreItem()
-                        viewModel.restoreArticle(ArticleViewAdapter.actionArticle!!)
-                        adapter.notifyItemInserted(ArticleViewAdapter.actionPosition!!)
-                    }
-                }*/
-
             })
             .build()
 

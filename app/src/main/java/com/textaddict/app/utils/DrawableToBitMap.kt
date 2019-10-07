@@ -1,4 +1,4 @@
-package com.textaddict.app.ui
+package com.textaddict.app.utils
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
