@@ -7,8 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.textaddict.app.database.AppDatabase
+import com.textaddict.app.database.entity.UserToken
 import com.textaddict.app.database.repository.UserRepository
 import com.textaddict.app.network.ArticleApiService
+import com.textaddict.app.network.Output
 import com.textaddict.app.network.ResultLogin
 import com.textaddict.app.viewmodel.AppViewModel
 
@@ -16,9 +18,9 @@ class LoginViewModel(application: Application) : AppViewModel(application) {
 
     private val repository: UserRepository
 
-    val resultLogin: LiveData<ResultLogin>
+    val resultLogin: LiveData<Output<UserToken>>
         get() = _resultLogin
-    private val _resultLogin = MutableLiveData<ResultLogin>()
+    private val _resultLogin = MutableLiveData<Output<UserToken>>()
 
     val resultSignUp: LiveData<ResultLogin>
         get() = _resultSignUp
@@ -30,20 +32,11 @@ class LoginViewModel(application: Application) : AppViewModel(application) {
     }
 
     fun loginUserInServer(userName: String, userPassword: String, pref: SharedPreferences) {
-        var user: ResultLogin? = null
+        var user: Output<UserToken>?
         launchDataLoad {
-            //try {
             user = repository.loginUserInServer(userName, userPassword, pref, getApplication())
-            //_login.postValue(user)
             _resultLogin.postValue(user)
-            /*} catch (e: Exception) {
-                user = ResultLogin.Error("login", e)
-                _resultLogin.postValue(user)
-                Log.e("Exception", e.message)
-                e.printStackTrace()
-            }*/
         }
-        Log.e("Exception", user.toString())
     }
 
     fun signUpUserInServer(

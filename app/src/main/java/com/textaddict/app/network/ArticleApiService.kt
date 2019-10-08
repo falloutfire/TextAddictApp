@@ -26,7 +26,7 @@ object ArticleApiService {
     // we are creating a networking client using OkHttp and add our authInterceptor.
     private val apiClient = OkHttpClient().newBuilder().addInterceptor(interceptor).build()
 
-    private fun getRetrofit(): Retrofit {
+    fun getRetrofit(): Retrofit {
 
         val logging = HttpLoggingInterceptor()
         // set your desired log level

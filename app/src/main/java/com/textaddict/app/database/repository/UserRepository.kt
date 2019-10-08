@@ -54,10 +54,11 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
         userPassword: String,
         pref: SharedPreferences,
         context: Context
-    ): ResultLogin =
+    ): Output<UserToken> =
         withContext(Dispatchers.IO) {
 
             val response = processLoginUserInServer(username, userPassword)
+
             if (response is Output.Success<UserToken>) {
                 userDao.insertUser(
                     User(
@@ -75,12 +76,13 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
                 editor.putString(APP_PREFERENCES_USER_ACCESS_TOKEN, response.output.access_token)
                 editor.apply()
 
-                return@withContext ResultLogin.Success
+                return@withContext response
             } else {
-                return@withContext ResultLogin.Error(
+                return@withContext response
+                /*return@withContext ResultLogin.Error(
                     message = context.resources.getString(R.string.bad_credentials),
                     exception = (response as Output.Error).exception
-                )
+                )*/
             }
         }
 

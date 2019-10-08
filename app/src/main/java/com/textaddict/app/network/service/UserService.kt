@@ -10,13 +10,13 @@ import retrofit2.http.POST
 
 interface UserService {
 
-    @POST("signin")
+    @POST("auth/signin")
     suspend fun loginUserAsync(@Body user: UserLogin): Response<UserToken>
 
-    @POST("signin")
+    @POST("auth/signin")
     suspend fun loginUserAsyncCall(@Body user: UserLogin): Call<UserToken>
 
-    @POST("register")
+    @POST("auth/register")
     suspend fun registerUserAsync(@Body user: UserLogin): Response<UserToken>
 
     @POST("user")

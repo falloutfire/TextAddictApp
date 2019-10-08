@@ -13,12 +13,16 @@ import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.activity.StartUpActivity.Companion.APP_PREFERENCES
 import com.textaddict.app.ui.fragment.*
 import com.textaddict.app.utils.Constants.ACTION
+import com.textaddict.app.utils.Constants.DATA_KEY_1
+import com.textaddict.app.utils.Constants.DATA_KEY_2
 import com.textaddict.app.utils.Constants.EXTRA_IS_ROOT_FRAGMENT
 import com.textaddict.app.utils.Constants.TAB_FAVORITE
 import com.textaddict.app.utils.Constants.TAB_HOME
 import com.textaddict.app.utils.Constants.TAB_NOTIFICATION
 import com.textaddict.app.utils.Constants.TAB_PROFILE
+import com.textaddict.app.utils.FragmentUtils.Companion.addAdditionalTabFragment
 import com.textaddict.app.utils.FragmentUtils.Companion.addInitialTabFragment
+import com.textaddict.app.utils.FragmentUtils.Companion.addShowHideFragment
 import com.textaddict.app.utils.FragmentUtils.Companion.removeFragment
 import com.textaddict.app.utils.FragmentUtils.Companion.showHideTabFragment
 import com.textaddict.app.utils.StackListManager.Companion.updateStackIndex
@@ -88,76 +92,79 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
 
     private fun createStacks() {
         navView = findViewById(R.id.nav_view)
-        navView.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener)
+        navView.setOnNavigationItemSelectedListener(
+            onNavigationItemSelectedListener
+        )
 
-        fragmentHome = ArticleListFragment.newInstance(2, userId)
-        fragmentFavorite = FavoriteFragment()
-        fragmentNotification = NotificationFragment()
+        fragmentHome = ArticleListFragment.newInstance(2, userId, true)
+        fragmentFavorite = FavoriteFragment.newInstance(true)
+        fragmentNotification = NotificationFragment.newInstance(true)
         fragmentProfile =
             ProfileFragment.newInstance(
                 pref.getLong(
                     StartUpActivity.APP_PREFERENCES_USER_ID,
                     0
                 ), ""
+                , true
             )
 
         tagStacks = LinkedHashMap()
         tagStacks!![TAB_HOME] = Stack()
-        tagStacks!![TAB_PROFILE] = Stack()
         tagStacks!![TAB_FAVORITE] = Stack()
         tagStacks!![TAB_NOTIFICATION] = Stack()
+        tagStacks!![TAB_PROFILE] = Stack()
 
         menuStacks = ArrayList()
         menuStacks!!.add(TAB_HOME)
 
         stackList = ArrayList()
         stackList!!.add(TAB_HOME)
-        stackList!!.add(TAB_PROFILE)
         stackList!!.add(TAB_FAVORITE)
         stackList!!.add(TAB_NOTIFICATION)
+        stackList!!.add(TAB_PROFILE)
 
         navView.selectedItemId = R.id.navigation_home
         navView.setOnNavigationItemReselectedListener(onNavigationItemReselectedListener)
     }
+
+    private val onNavigationItemSelectedListener =
+        BottomNavigationView.OnNavigationItemSelectedListener { item ->
+            return@OnNavigationItemSelectedListener when (item.itemId) {
+                R.id.navigation_home -> {
+                    selectedTab(TAB_HOME)
+                    true
+                }
+                R.id.navigation_favorite -> {
+                    selectedTab(TAB_FAVORITE)
+                    true
+                }
+                R.id.navigation_notifications -> {
+                    selectedTab(TAB_NOTIFICATION)
+                    true
+                }
+                R.id.navigation_person -> {
+                    selectedTab(TAB_PROFILE)
+                    true
+                }
+                else -> false
+            }
+        }
 
     private val onNavigationItemReselectedListener =
         BottomNavigationView.OnNavigationItemReselectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.navigation_home -> popStackExceptFirst()
                 R.id.navigation_favorite -> popStackExceptFirst()
-                R.id.navigation_person -> popStackExceptFirst()
                 R.id.navigation_notifications -> popStackExceptFirst()
+                R.id.navigation_person -> popStackExceptFirst()
             }
-        }
-
-    private val onNavigationItemSelectedListener =
-        BottomNavigationView.OnNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.navigation_home -> {
-                    selectedTab(TAB_HOME)
-                    return@OnNavigationItemSelectedListener true
-                }
-                R.id.navigation_favorite -> {
-                    selectedTab(TAB_FAVORITE)
-                    return@OnNavigationItemSelectedListener true
-                }
-                R.id.navigation_notifications -> {
-                    selectedTab(TAB_NOTIFICATION)
-                    return@OnNavigationItemSelectedListener true
-                }
-                R.id.navigation_person -> {
-                    selectedTab(TAB_PROFILE)
-                    return@OnNavigationItemSelectedListener true
-                }
-            }
-            false
         }
 
     private fun selectedTab(tabId: String) {
         currentTab = tabId
         BaseFragment.currentTab = currentTab as String
 
-        if (tagStacks!![tabId]!!.size == 0) {
+        if (tagStacks?.get(tabId)?.size == 0) {
             /*
               First time this tab is selected. So add first fragment of that tab.
               We are adding a new fragment which is not present in stack. So add to stack is true.
@@ -173,43 +180,46 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
                         true
                     )
                     resolveStackLists(tabId)
-                    assignCurrentFragment(fragmentHome!!)
-                }
-                TAB_PROFILE -> {
-                    addInitialTabFragment(
-                        supportFragmentManager,
-                        tagStacks!!,
-                        TAB_PROFILE,
-                        fragmentProfile!!,
-                        R.id.frame_container,
-                        true
-                    )
-                    resolveStackLists(tabId)
-                    assignCurrentFragment(fragmentProfile!!)
+                    assignCurrentFragment(fragmentHome)
                 }
                 TAB_FAVORITE -> {
-                    addInitialTabFragment(
+                    addAdditionalTabFragment(
                         supportFragmentManager,
                         tagStacks!!,
                         TAB_FAVORITE,
                         fragmentFavorite!!,
+                        currentFragment!!,
                         R.id.frame_container,
                         true
                     )
                     resolveStackLists(tabId)
-                    assignCurrentFragment(fragmentFavorite!!)
+                    assignCurrentFragment(fragmentFavorite)
                 }
                 TAB_NOTIFICATION -> {
-                    addInitialTabFragment(
+                    addAdditionalTabFragment(
                         supportFragmentManager,
                         tagStacks!!,
                         TAB_NOTIFICATION,
                         fragmentNotification!!,
+                        currentFragment!!,
                         R.id.frame_container,
                         true
                     )
                     resolveStackLists(tabId)
-                    assignCurrentFragment(fragmentNotification!!)
+                    assignCurrentFragment(fragmentNotification)
+                }
+                TAB_PROFILE -> {
+                    addAdditionalTabFragment(
+                        supportFragmentManager,
+                        tagStacks!!,
+                        TAB_PROFILE,
+                        fragmentProfile!!,
+                        currentFragment!!,
+                        R.id.frame_container,
+                        true
+                    )
+                    resolveStackLists(tabId)
+                    assignCurrentFragment(fragmentProfile)
                 }
             }
         } else {
@@ -218,7 +228,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
              * Show the target fragment
              */
             val targetFragment =
-                supportFragmentManager.findFragmentByTag(tagStacks!![tabId]!!.lastElement())
+                supportFragmentManager.findFragmentByTag(tagStacks?.get(tabId)?.lastElement())
             showHideTabFragment(supportFragmentManager, targetFragment!!, currentFragment!!)
             resolveStackLists(tabId)
             assignCurrentFragment(targetFragment)
@@ -230,11 +240,11 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
          * Select the second last fragment in current tab's stack,
          * which will be shown after the fragment transaction given below
          */
-        val fragmentTag = tagStacks!![currentTab]!!.elementAt(tagStacks!![currentTab]!!.size - 2)
+        val fragmentTag = tagStacks?.get(currentTab)?.elementAt(tagStacks!![currentTab]!!.size - 2)
         val fragment = supportFragmentManager.findFragmentByTag(fragmentTag)
 
         /*pop current fragment from stack */
-        tagStacks!![currentTab]!!.pop()
+        tagStacks?.get(currentTab)?.pop()
 
         removeFragment(supportFragmentManager, fragment!!, currentFragment!!)
 
@@ -243,8 +253,8 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
 
     private fun resolveBackPressed() {
         var stackValue = 0
-        if (tagStacks!![currentTab]!!.size == 1) {
-            val value = tagStacks!![stackList!![1]]
+        if (tagStacks?.get(currentTab)?.size == 1) {
+            val value = tagStacks!![stackList!!.get(1)]
             if (value!!.size > 1) {
                 stackValue = value.size
                 popAndNavigateToPreviousMenu()
@@ -263,12 +273,12 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
 
     /*Pops the last fragment inside particular tab and goes to the second tab in the stack*/
     private fun popAndNavigateToPreviousMenu() {
-        val tempCurrent = stackList!![0]
-        currentTab = stackList!![1]
+        val tempCurrent = stackList!!.get(0)
+        currentTab = stackList!!.get(1)
         BaseFragment.currentTab = currentTab as String
         navView.selectedItemId = resolveTabPositions(currentTab!!)
         val targetFragment =
-            supportFragmentManager.findFragmentByTag(tagStacks!![currentTab!!]!!.lastElement())
+            supportFragmentManager.findFragmentByTag(tagStacks?.get(currentTab!!)?.lastElement())
         showHideTabFragment(supportFragmentManager, targetFragment!!, currentFragment!!)
         assignCurrentFragment(targetFragment)
         updateStackToIndexFirst(stackList!!, tempCurrent)
@@ -277,7 +287,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
 
     private fun navigateToPreviousMenu() {
         menuStacks!!.removeAt(0)
-        currentTab = menuStacks!![0]
+        currentTab = menuStacks!!.get(0)
         BaseFragment.currentTab = currentTab as String
         navView.selectedItemId = resolveTabPositions(currentTab!!)
         val targetFragment =
@@ -287,10 +297,10 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
     }
 
     private fun popStackExceptFirst() {
-        if (tagStacks!![currentTab]!!.size == 1) {
+        if (tagStacks?.get(currentTab)?.size == 1) {
             return
         }
-        while (!tagStacks!![currentTab]!!.empty() && !supportFragmentManager.findFragmentByTag(
+        while (!tagStacks?.get(currentTab)?.empty()!! && !supportFragmentManager.findFragmentByTag(
                 tagStacks!![currentTab]!!.peek()
             )!!.arguments!!.getBoolean(
                 EXTRA_IS_ROOT_FRAGMENT
@@ -309,7 +319,7 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
     /*
      * Add a fragment to the stack of a particular tab
      */
-    /*private fun showFragment(bundle: Bundle, fragmentToAdd: Fragment) {
+    private fun showFragment(bundle: Bundle, fragmentToAdd: Fragment) {
         val tab = bundle.getString(DATA_KEY_1)
         val shouldAdd = bundle.getBoolean(DATA_KEY_2)
         addShowHideFragment(
@@ -317,40 +327,38 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
             tagStacks!!,
             tab!!,
             fragmentToAdd,
-            getCurrentFragmentFromShownStack()!!,
+            this.getCurrentFragmentFromShownStack()!!,
             R.id.frame_container,
             shouldAdd
         )
         assignCurrentFragment(fragmentToAdd)
-    }*/
+    }
 
     private fun resolveTabPositions(currentTab: String): Int {
         var tabIndex = 0
         when (currentTab) {
             TAB_HOME -> tabIndex = R.id.navigation_home
-            TAB_PROFILE -> tabIndex = R.id.navigation_person
             TAB_FAVORITE -> tabIndex = R.id.navigation_favorite
             TAB_NOTIFICATION -> tabIndex = R.id.navigation_notifications
+            TAB_PROFILE -> tabIndex = R.id.navigation_person
         }
         return tabIndex
     }
 
     private fun resolveStackLists(tabId: String) {
-        updateStackIndex(stackList!!, tabId)
-        updateTabStackIndex(menuStacks!!, tabId)
+        updateStackIndex(this.stackList!!, tabId)
+        updateTabStackIndex(this.menuStacks!!, tabId)
     }
 
-    /*private fun getCurrentFragmentFromShownStack(): Fragment? {
+    private fun getCurrentFragmentFromShownStack(): Fragment? {
         return supportFragmentManager.findFragmentByTag(
-            tagStacks!![currentTab]!!.elementAt(
+            tagStacks?.get(currentTab)?.elementAt(
                 tagStacks!![currentTab]!!.size - 1
             )
         )
-    }*/
-
-    private fun assignCurrentFragment(current: Fragment) {
-        currentFragment = current
     }
 
-
+    private fun assignCurrentFragment(current: Fragment?) {
+        currentFragment = current
+    }
 }

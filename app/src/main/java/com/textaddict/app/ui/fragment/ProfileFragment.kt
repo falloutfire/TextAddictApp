@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
 import com.textaddict.app.ui.activity.MainActivity
+import com.textaddict.app.utils.Constants
 import com.textaddict.app.viewmodel.impl.ProfileViewModel
 import kotlinx.android.synthetic.main.fragment_profile.*
 
@@ -127,11 +128,12 @@ class ProfileFragment : BaseFragment(), View.OnClickListener {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: Long, param2: String) =
+        fun newInstance(param1: Long, param2: String, isRoot: Boolean) =
             ProfileFragment().apply {
                 arguments = Bundle().apply {
                     putLong(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
+                    putBoolean(Constants.EXTRA_IS_ROOT_FRAGMENT, isRoot)
                 }
             }
     }

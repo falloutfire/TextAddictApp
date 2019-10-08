@@ -21,6 +21,7 @@ import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.adapter.ArticleViewAdapter
 import com.textaddict.app.ui.adapter.OnSwipeTouchListener
 import com.textaddict.app.ui.adapter.TouchCallbackBuilder
+import com.textaddict.app.utils.Constants
 import com.textaddict.app.utils.drawableToBitmap
 import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 
@@ -158,11 +159,12 @@ class ArticleListFragment : BaseFragment() {
         const val ARG_USER_ID = "user-userId"
 
         @JvmStatic
-        fun newInstance(columnCount: Int, userId: Long) =
+        fun newInstance(columnCount: Int, userId: Long, isRoot: Boolean) =
             ArticleListFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_COLUMN_COUNT, columnCount)
                     putLong(ARG_USER_ID, userId)
+                    putBoolean(Constants.EXTRA_IS_ROOT_FRAGMENT, isRoot)
                 }
             }
     }

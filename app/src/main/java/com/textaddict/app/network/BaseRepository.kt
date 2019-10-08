@@ -1,11 +1,13 @@
 package com.textaddict.app.network
 
 import android.util.Log
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.IOException
 import java.net.SocketTimeoutException
+
 
 open class BaseRepository {
     suspend fun <T : Any> safeApiCall(call: suspend () -> Response<T>, error: String): T? {
@@ -41,9 +43,9 @@ open class BaseRepository {
                 Log.e("Success", response.code().toString())
                 Output.Success(response.body()!!)
             } else
-                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                Output.Error(IOException("OOps .. Something went wrong due to  $error"), "")
         } catch (e: Exception) {
-            Output.Error(Exception("OOps .. Something went wrong due to  $e"))
+            Output.Error(Exception("OOps .. Something went wrong due to  $e"), "")
         }
     }
 
@@ -55,10 +57,13 @@ open class BaseRepository {
         call.invoke().enqueue(object : Callback<T> {
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 if (response.isSuccessful) {
-                    if ((response.body() is Result<*>)) {
-                        if ((response.body() as Result<*>).status == "error") {
+                    if ((response.body() is Result)) {
+                        if ((response.body() as Result).status == "error") {
                             output =
-                                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                                Output.Error(
+                                    IOException("OOps .. Something went wrong due to  $error"),
+                                    ""
+                                )
                         } else {
                             output = Output.Success(response.body()!!)
                         }
@@ -68,28 +73,28 @@ open class BaseRepository {
                 } else {
                     Log.e("call", response.code().toString())
                     output =
-                        Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                        Output.Error(IOException("OOps .. Something went wrong due to  $error"), "")
                 }
             }
 
             override fun onFailure(call: Call<T>, t: Throwable) {
                 if (t is SocketTimeoutException) {
                     // "Connection Timeout";
-                    output = Output.Error(t)
+                    output = Output.Error(t, "")
                     //Output.Error(SocketTimeoutException("OOps .. Something went wrong due to  $error, connection timeout"))
                 } else if (t is IOException) {
                     // "Timeout";
-                    output = Output.Error(t)
+                    output = Output.Error(t, "")
                     //Output.Error(SocketTimeoutException("OOps .. Something went wrong due to  $error, timeout"))
                 } else {
                     //Call was cancelled by user
                     if (call.isCanceled) {
                         Log.e("Call", "Call was cancelled forcefully")
-                        output = Output.Error(t as Exception)
+                        output = Output.Error(t as Exception, "")
                     } else {
                         //Generic error handling
                         Log.e("Call", "Network Error :: " + t.localizedMessage)
-                        output = Output.Error(t as Exception)
+                        output = Output.Error(t as Exception, "")
                     }
                 }
             }
@@ -104,45 +109,63 @@ open class BaseRepository {
     ): Output<T> {
         return try {
             val response = call.invoke()
-            if (response.isSuccessful) {
-                if ((response.body() is Result<*>)) {
-                    if ((response.body() as Result<*>).status == "error") {
-                        Output.Error(IOException("OOps .. Something went wrong due to  $error"))
-                    } else {
-                        Output.Success(response.body()!!)
-                    }
-                } else
-                    Output.Success(response.body()!!)
-            } else {
-                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+            when {
+                response.isSuccessful -> Output.Success(response.body()!!)
+                response.code() >= 500 -> Output.Error(
+                    IOException("OOps .. Something went wrong due to  $error"),
+                    "Something wrong. Please, try again later."
+                )
+                else -> {
+                    Log.e("message", response.message())
+                    Log.e("message", response.errorBody()!!.toString())
+                    val jObjError = JSONObject(response.errorBody()!!.string())
+                    Output.Error(
+                        IOException("OOps .. Something went wrong due to  $error"),
+                        jObjError.getString("message")
+                    )
+                }
             }
         } catch (e: SocketTimeoutException) {
-            Output.Error(SocketTimeoutException("OOps .. Something went wrong due to  $error"))
+            Output.Error(
+                SocketTimeoutException("OOps .. Something went wrong due to  $error"),
+                "Connection Timeout"
+            )
         } catch (e: IOException) {
-            Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+            Output.Error(IOException("OOps .. Something went wrong due to  $error"), "Timeout")
         } catch (e: Exception) {
-            Output.Error(Exception("OOps .. Something went wrong due to  $error"))
+            Output.Error(
+                Exception("OOps .. Something went wrong due to  $error"),
+                "Something wrong. Please, try again later."
+            )
         }
     }
 
     private suspend fun <T : Any> apiOutput(
-        call: suspend () -> Response<Result<T>>,
+        call: suspend () -> Response<Result>,
         error: String
-    ): Output<Result<T>> {
+    ): Output<Result> {
         val response = call.invoke()
         return if (response.isSuccessful) {
             Log.e("Success", response.code().toString())
             if ((response.body() as Result).status != "error") {
                 Output.Success(response.body()!!)
             } else {
-                Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+                Output.Error(IOException("OOps .. Something went wrong due to  $error"), "")
             }
         } else {
-            Output.Error(IOException("OOps .. Something went wrong due to  $error"))
+            Output.Error(IOException("OOps .. Something went wrong due to  $error"), "")
         }
     }
 
-    data class Result<T : Any>(var status: String, var message: T)
+    class Result() {
+        var status: String = ""
+        var message: String = ""
+
+        constructor(status: String, message: String) : this() {
+            this.status = status
+            this.message = message
+        }
+    }
 
     val ERROR = "error"
 }

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.ui.fragment.ArticleListFragment.OnListFragmentInteractionListener
 import kotlinx.android.synthetic.main.fragment_article_item.view.*
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 
@@ -44,8 +45,8 @@ class ArticleViewAdapter internal constructor(
         holder.mTitleView.text = item.title
         holder.mDomainView.text = item.domain
 
-        val df = SimpleDateFormat.getDateInstance()
-        val now = df.format(item.date)
+        val df = SimpleDateFormat.getDateInstance(DateFormat.SHORT)
+        val now = df.format(item.date!!)
 
         holder.mDateView.text = now
 

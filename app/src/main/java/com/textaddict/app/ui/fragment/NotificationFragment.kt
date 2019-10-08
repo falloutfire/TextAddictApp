@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.textaddict.app.R
+import com.textaddict.app.utils.Constants
 
 /**
  * A simple [Fragment] subclass.
@@ -21,5 +22,13 @@ class NotificationFragment : BaseFragment() {
         return inflater.inflate(R.layout.fragment_notification, container, false)
     }
 
-
+    companion object {
+        fun newInstance(isRoot: Boolean): NotificationFragment {
+            val args = Bundle()
+            args.putBoolean(Constants.EXTRA_IS_ROOT_FRAGMENT, isRoot)
+            val fragment = NotificationFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
 }

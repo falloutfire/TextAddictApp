@@ -14,7 +14,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
-import com.textaddict.app.network.ResultLogin
+import com.textaddict.app.database.entity.UserToken
+import com.textaddict.app.network.Output
 import com.textaddict.app.ui.activity.StartUpActivity
 import com.textaddict.app.viewmodel.impl.LoginViewModel
 import kotlinx.android.synthetic.main.fragment_login.*
@@ -71,12 +72,12 @@ class LoginFragment : Fragment(), View.OnClickListener {
 
         viewModel.resultLogin.observe(this, Observer { value ->
             value.let {
-                if (value == ResultLogin.Success) {
+                if (value is Output.Success<UserToken>) {
                     Log.e("login", "complete")
                     viewModel.spinner.removeObservers(this)
                     (activity as StartUpActivity).startMainActivity()
                 } else {
-                    (activity as StartUpActivity).openErrorFragment((value as ResultLogin.Error).message)
+                    (activity as StartUpActivity).openErrorFragment((value as Output.Error).messageOut)
                     Log.e("login", "invalid")
                 }
             }
