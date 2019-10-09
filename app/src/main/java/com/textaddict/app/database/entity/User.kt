@@ -17,19 +17,7 @@ data class User(
     var userId: Long = 0
 }
 
-class UserLogin() {
-
-    var username: String? = null
-    var password: String? = null
-    var email: String? = null
-
-    constructor(username: String, password: String, email: String? = null) : this() {
-        this.email = email
-        this.username = username
-        this.password = password
-    }
-
-}
+data class UserLogin(var username: String?, var password: String?, var email: String? = null)
 
 data class UserToken(
     var status: String?,
@@ -37,18 +25,3 @@ data class UserToken(
     var refresh_token: String?,
     var expired_in: Long?
 )
-
-/*
-class UserToken() {
-    var status: String? = null
-    var access_token: String? = null
-    var refresh_token: String? = null
-    var expired_in: Long? = null
-
-    constructor(status: String, access_token: String, refresh_token: String, expired_in: Long): this() {
-        this.status = status
-        this.access_token = access_token
-        this.refresh_token = refresh_token
-        this.expired_in = expired_in
-    }
-}*/

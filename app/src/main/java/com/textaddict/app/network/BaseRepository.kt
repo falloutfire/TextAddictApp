@@ -116,8 +116,6 @@ open class BaseRepository {
                     "Something wrong. Please, try again later."
                 )
                 else -> {
-                    Log.e("message", response.message())
-                    Log.e("message", response.errorBody()!!.toString())
                     val jObjError = JSONObject(response.errorBody()!!.string())
                     Output.Error(
                         IOException("OOps .. Something went wrong due to  $error"),

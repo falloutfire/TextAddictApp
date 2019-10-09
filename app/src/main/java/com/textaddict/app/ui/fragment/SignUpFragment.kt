@@ -1,6 +1,5 @@
 package com.textaddict.app.ui.fragment
 
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
@@ -15,8 +14,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.textaddict.app.R
-import com.textaddict.app.network.ResultLogin
-import com.textaddict.app.ui.activity.MainActivity
+import com.textaddict.app.database.entity.UserToken
+import com.textaddict.app.network.Output
 import com.textaddict.app.ui.activity.StartUpActivity
 import com.textaddict.app.viewmodel.impl.LoginViewModel
 import kotlinx.android.synthetic.main.fragment_sign_up.*
@@ -76,19 +75,12 @@ class SignUpFragment : Fragment(), View.OnClickListener {
 
         viewModel.resultSignUp.observe(this, Observer { value ->
             value.let {
-                if (value == ResultLogin.Success) {
+                if (value is Output.Success<UserToken>) {
                     Log.e("login", "complete")
                     viewModel.spinner.removeObservers(this)
-                    //(activity as StartUpActivity).startMainActivity()
-                    val intent = Intent(activity, MainActivity::class.java)
-                    intent.putExtra(
-                        StartUpActivity.USER_ID,
-                        pref.getLong(StartUpActivity.APP_PREFERENCES_USER_ID, 0)
-                    )
-                    startActivity(intent)
-                    activity?.finish()
+                    (activity as StartUpActivity).startMainActivity()
                 } else {
-                    (activity as StartUpActivity).openErrorFragment((value as ResultLogin.Error).message)
+                    (activity as StartUpActivity).openErrorFragment((value as Output.Error).messageOut)
                     Log.e("login", "invalid")
                 }
             }

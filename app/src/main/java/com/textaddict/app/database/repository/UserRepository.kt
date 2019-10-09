@@ -2,14 +2,12 @@ package com.textaddict.app.database.repository
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.textaddict.app.R
 import com.textaddict.app.database.dao.UserDao
 import com.textaddict.app.database.entity.User
 import com.textaddict.app.database.entity.UserLogin
 import com.textaddict.app.database.entity.UserToken
 import com.textaddict.app.network.BaseRepository
 import com.textaddict.app.network.Output
-import com.textaddict.app.network.ResultLogin
 import com.textaddict.app.network.service.UserService
 import com.textaddict.app.ui.activity.StartUpActivity
 import kotlinx.coroutines.Dispatchers
@@ -38,10 +36,10 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
         username: String,
         userPassword: String,
         userEmail: String
-    ): UserToken? {
+    ): Output<UserToken> {
         val login = UserLogin(username, userPassword, userEmail)
 
-        return safeApiCall(
+        return safeApiResponse(
             call = {
                 apiInterface.registerUserAsync(login)
             },
@@ -79,10 +77,6 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
                 return@withContext response
             } else {
                 return@withContext response
-                /*return@withContext ResultLogin.Error(
-                    message = context.resources.getString(R.string.bad_credentials),
-                    exception = (response as Output.Error).exception
-                )*/
             }
         }
 
@@ -92,28 +86,30 @@ class UserRepository(private val userDao: UserDao, private val apiInterface: Use
         userEmail: String,
         pref: SharedPreferences,
         context: Context
-    ): ResultLogin =
+    ): Output<UserToken> =
         withContext(Dispatchers.IO) {
 
             val response = processSignUpUserInServer(username, userPassword, userEmail)
-            if (response != null) {
-                userDao.insertUser(User(username, "email", userPassword, response.refresh_token!!))
+            if (response is Output.Success<UserToken>) {
+                userDao.insertUser(
+                    User(
+                        username,
+                        userEmail,
+                        userPassword,
+                        response.output.refresh_token!!
+                    )
+                )
 
                 val user = userDao.getUserByUsername(username)
 
                 val editor = pref.edit()
                 editor.putLong(StartUpActivity.APP_PREFERENCES_USER_ID, user!!.userId)
-                editor.putString(APP_PREFERENCES_USER_ACCESS_TOKEN, response.access_token)
+                editor.putString(APP_PREFERENCES_USER_ACCESS_TOKEN, response.output.access_token)
                 editor.apply()
 
-                return@withContext ResultLogin.Success
-                //return@withContext true
+                return@withContext response
             } else {
-                val e = Exception()
-                return@withContext ResultLogin.Error(
-                    message = context.resources.getString(R.string.bad_credentials),
-                    exception = e
-                )
+                return@withContext response
             }
         }
 
