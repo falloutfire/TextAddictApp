@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.Nullable
@@ -30,7 +31,8 @@ import java.text.SimpleDateFormat
  */
 class ArticleViewAdapter internal constructor(
     context: Context,
-    private val mListener: OnListFragmentInteractionListener?, private val isMainList: Boolean
+    private val mListener: OnListFragmentInteractionListener?,
+    private val isMainList: Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     ItemTouchHelperAdapter<ArticleType> {
 
@@ -38,7 +40,7 @@ class ArticleViewAdapter internal constructor(
     private val mOnClickListener: View.OnClickListener
     val list: ArrayList<ArticleType> = arrayListOf()
     private var count: Int = 0
-    var selectionTracker: SelectionTracker<*>? = null
+    var selectionTracker: SelectionTracker<ArticleType>? = null
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -73,6 +75,16 @@ class ArticleViewAdapter internal constructor(
             val now = df.format(item.date!!)
 
             holder.mDateView.text = now
+
+            selectionTracker?.let {
+                if (it.isSelected(list[position])) {
+                    holder.mChoose.visibility = View.VISIBLE
+                    holder.setActivatedState(true)
+                } else {
+                    holder.mChoose.visibility = View.GONE
+                    holder.setActivatedState(false)
+                }
+            }
 
             with(holder.mView) {
                 tag = item
@@ -165,6 +177,7 @@ class ArticleViewAdapter internal constructor(
         val mTitleView: TextView = mView.item_article_title
         val mDomainView: TextView = mView.item_article_domain
         val mDateView: TextView = mView.item_article_date
+        val mChoose: ImageView = mView.checkImageView
 
         override fun toString(): String {
             return super.toString() + " '" + mDomainView.text + "'"

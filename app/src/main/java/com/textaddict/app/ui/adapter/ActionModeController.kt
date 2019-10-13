@@ -15,6 +15,7 @@ class ActionModeController(private val tracker: SelectionTracker<*>) : ActionMod
                 true
             }
             R.id.action_delete -> {
+                val test = tracker.selection
                 mode.finish()
                 true
             }
