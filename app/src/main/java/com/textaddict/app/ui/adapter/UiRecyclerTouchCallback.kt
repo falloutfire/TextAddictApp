@@ -82,7 +82,6 @@ class UiRecyclerTouchCallback<T : Any>(
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         var snackBar: Snackbar? = null
-        var isCancel = false
         val set = AnimatorSet()
         val unSet = AnimatorSet()
 
@@ -96,9 +95,7 @@ class UiRecyclerTouchCallback<T : Any>(
 
         if (direction == ItemTouchHelper.LEFT) {
             snackBar = createSnackBar(leftTextSnackBar)
-        } /*else if (direction == ItemTouchHelper.RIGHT) {
-            snackBar = createSnackBar(rightTextSnackBar)
-        }*/
+        }
 
         set.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
@@ -114,7 +111,6 @@ class UiRecyclerTouchCallback<T : Any>(
         set.start()
 
         snackBar!!.setAction("UNDO") {
-            isCancel = true
             val back = (viewHolder as ArticleViewAdapter.ViewHolderArticle).mBackground
             back.setBackgroundColor(Color.TRANSPARENT)
             snackBar.dismiss()
@@ -179,29 +175,7 @@ class UiRecyclerTouchCallback<T : Any>(
 
                 val margin = itemWidth * 0.025f
 
-                if (dX > 0) {
-                    paint.color = Color.parseColor("#FF333C46")
-                    val background = RectF(left, top, dX + 25, bottom)
-                    c.drawRect(background, paint)
-
-                    c.clipRect(background)
-                    val iconLeft = left + margin
-
-                    if (circleRadius > 0f) {
-                        val cy = centerY
-                        val cx = iconLeft + (iconSize / 2)
-
-                        c.drawCircle(cx, cy, circleRadius, circlePaintLeft!!)
-                    }
-
-                    val iconRect = RectF(
-                        iconLeft,
-                        centerY - iconSize / 2,
-                        iconLeft + iconSize,
-                        centerY + iconSize / 2
-                    )
-                    c.drawBitmap(leftIcon, null, iconRect, paint)
-                } else {
+                if (dX < 0) {
                     paint.color = Color.parseColor("#FF333C46")
                     val background = RectF(right + dX - 25, top, right, bottom)
                     c.drawRect(background, paint)
@@ -223,6 +197,28 @@ class UiRecyclerTouchCallback<T : Any>(
                         centerY + iconSize / 2
                     )
                     c.drawBitmap(rightIcon, null, iconRect, paint)
+                } else {
+                    paint.color = Color.parseColor("#FF333C46")
+                    val background = RectF(left, top, dX + 25, bottom)
+                    c.drawRect(background, paint)
+
+                    c.clipRect(background)
+                    val iconLeft = left + margin
+
+                    if (circleRadius > 0f) {
+                        val cy = centerY
+                        val cx = iconLeft + (iconSize / 2)
+
+                        c.drawCircle(cx, cy, circleRadius, circlePaintLeft!!)
+                    }
+
+                    val iconRect = RectF(
+                        iconLeft,
+                        centerY - iconSize / 2,
+                        iconLeft + iconSize,
+                        centerY + iconSize / 2
+                    )
+                    c.drawBitmap(leftIcon, null, iconRect, paint)
                 }
             }
         }

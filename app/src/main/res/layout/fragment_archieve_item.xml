@@ -7,12 +7,12 @@
     android:background="?android:attr/selectableItemBackground">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/articleIconImageView"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginStart="34dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="10dp"
-        android:layout_marginEnd="34dp"
+        android:layout_marginEnd="31dp"
         android:layout_marginBottom="10dp"
         android:contentDescription="@string/item_article_logo"
         android:scaleType="fitXY"
@@ -22,9 +22,9 @@
         android:id="@+id/item_archive_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/imageView"
+        android:layout_alignTop="@+id/articleIconImageView"
         android:layout_marginEnd="@dimen/text_margin"
-        android:layout_toEndOf="@+id/imageView"
+        android:layout_toEndOf="@+id/articleIconImageView"
         android:text="@string/archived_articles"
         android:textColor="@color/colorAccent"
         android:textSize="17sp"
@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/item_archive_title"
-        android:layout_toEndOf="@+id/imageView"
+        android:layout_toEndOf="@+id/articleIconImageView"
         android:text="@string/count_articles"
         android:textColor="@color/colorTextView"
         android:textSize="15sp" />

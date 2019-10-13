@@ -9,6 +9,8 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.selection.ItemDetailsLookup
+import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.textaddict.app.database.entity.ArchiveItem
@@ -34,8 +36,9 @@ class ArticleViewAdapter internal constructor(
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private val mOnClickListener: View.OnClickListener
-    private val list: ArrayList<ArticleType> = arrayListOf()
+    val list: ArrayList<ArticleType> = arrayListOf()
     private var count: Int = 0
+    var selectionTracker: SelectionTracker<*>? = null
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -165,6 +168,14 @@ class ArticleViewAdapter internal constructor(
 
         override fun toString(): String {
             return super.toString() + " '" + mDomainView.text + "'"
+        }
+
+        fun getItemDetails(): ItemDetailsLookup.ItemDetails<ArticleType>? {
+            return ArticleItemDetail(adapterPosition, list[adapterPosition])
+        }
+
+        fun setActivatedState(isActivated: Boolean) {
+            itemView.isActivated = isActivated
         }
     }
 

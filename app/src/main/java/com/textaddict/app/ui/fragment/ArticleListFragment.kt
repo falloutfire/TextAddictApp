@@ -8,16 +8,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.selection.SelectionTracker
+import androidx.recyclerview.selection.StorageStrategy
 import androidx.recyclerview.widget.*
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
 import com.textaddict.app.database.entity.ArticleType
-import com.textaddict.app.ui.adapter.ArticleViewAdapter
-import com.textaddict.app.ui.adapter.OnSwipeTouchListener
-import com.textaddict.app.ui.adapter.TouchCallbackBuilder
+import com.textaddict.app.ui.adapter.*
 import com.textaddict.app.utils.Constants
 import com.textaddict.app.utils.dpToPx
 import com.textaddict.app.utils.drawableToBitmap
@@ -31,6 +33,7 @@ class ArticleListFragment : BaseFragment() {
     private lateinit var viewModel: ListArticleViewModel
     private lateinit var adapter: ArticleViewAdapter
     private lateinit var spinner: ProgressBar
+    private var actionMode: ActionMode? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -97,10 +100,38 @@ class ArticleListFragment : BaseFragment() {
             DividerItemDecoration.VERTICAL
         )
         recyclerView.addItemDecoration(dividerItemDecoration)
-        subscribeUi(viewModel.articles)
+
+        val tracker = SelectionTracker.Builder<ArticleType>(// индетифицируем трекер в констексе
+            "article-selection-id",
+            recyclerView, // для Long ItemKeyProvider реализован в виде StableIdKeyProvider
+            ArticleKeyProvider(adapter.list),
+            ArticleLookup(recyclerView), // существуют аналогичные реализации для Long и String
+            StorageStrategy.createParcelableStorage(ArticleType::class.java)
+        ).build()
+
+        adapter.selectionTracker = tracker
+
+        tracker.addObserver(object : SelectionTracker.SelectionObserver<Any>() {
+            override fun onItemStateChanged(key: Any, selected: Boolean) {
+                super.onItemStateChanged(key, selected)
+                if (tracker.hasSelection() && actionMode == null) {
+                    actionMode = (activity as AppCompatActivity).startSupportActionMode(
+                        ActionModeController(tracker)
+                    )
+                    setSelectedTitle(tracker.selection.size())
+                } else if (!tracker.hasSelection()) {
+                    actionMode?.finish()
+                    actionMode = null
+                } else {
+                    setSelectedTitle(tracker.selection.size())
+                }
+            }
+        })
+
         viewModel.archivedArticles.observe(this, Observer { value ->
             adapter.setArchiveCount(value.size)
         })
+        subscribeUi(viewModel.articles)
     }
 
     override fun onAttach(context: Context) {
@@ -140,6 +171,10 @@ class ArticleListFragment : BaseFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
+    }
+
+    private fun setSelectedTitle(selected: Int) {
+        actionMode?.title = "Selected: $selected"
     }
 
     companion object {
