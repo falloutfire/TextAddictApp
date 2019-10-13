@@ -1,0 +1,52 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_back"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:animateLayoutChanges="false"
+    android:background="?android:attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="34dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="34dp"
+        android:layout_marginBottom="10dp"
+        android:contentDescription="@string/item_article_logo"
+        android:scaleType="fitXY"
+        card_view:srcCompat="@drawable/ic_archive_black_24dp" />
+
+    <TextView
+        android:id="@+id/item_archive_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/imageView"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:layout_toEndOf="@+id/imageView"
+        android:text="@string/archived_articles"
+        android:textColor="@color/colorAccent"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/item_archive_count_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item_archive_title"
+        android:layout_toEndOf="@+id/imageView"
+        android:text="@string/count_articles"
+        android:textColor="@color/colorTextView"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/item_archive_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/item_archive_title"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@+id/item_archive_count_title"
+        android:textColor="@color/colorTextView"
+        android:textSize="15sp" />
+</RelativeLayout>

@@ -1,18 +1,23 @@
 package com.textaddict.app.ui.adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.Nullable
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.textaddict.app.database.entity.ArchiveItem
 import com.textaddict.app.database.entity.Article
-import com.textaddict.app.ui.fragment.ArticleListFragment.OnListFragmentInteractionListener
+import com.textaddict.app.database.entity.ArticleType
+import com.textaddict.app.ui.fragment.OnListFragmentInteractionListener
+import kotlinx.android.synthetic.main.fragment_archieve_item.view.*
 import kotlinx.android.synthetic.main.fragment_article_item.view.*
+import kotlinx.android.synthetic.main.fragment_article_item.view.item_back
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
@@ -23,43 +28,79 @@ import java.text.SimpleDateFormat
  */
 class ArticleViewAdapter internal constructor(
     context: Context,
-    private val mListener: OnListFragmentInteractionListener?
-) : RecyclerView.Adapter<ArticleViewAdapter.ViewHolder>(),
-    ItemTouchHelperAdapter<Article> {
+    private val mListener: OnListFragmentInteractionListener?, private val isMainList: Boolean
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+    ItemTouchHelperAdapter<ArticleType> {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private val mOnClickListener: View.OnClickListener
-    private val list: ArrayList<Article> = arrayListOf()
+    private val list: ArrayList<ArticleType> = arrayListOf()
+    private var count: Int = 0
 
     init {
         mOnClickListener = View.OnClickListener { v ->
-            val item = v.tag as Article
-            // Notify the active callbacks interface (the activity, if the fragment is attached to
-            // one) that an item has been selected.
-            mListener?.onListFragmentInteraction(item)
+            if (v.tag is Article) {
+                val item = v.tag as Article
+                // Notify the active callbacks interface (the activity, if the fragment is attached to
+                // one) that an item has been selected.
+                mListener?.onListFragmentInteraction(item)
+            } else if (v.tag is ArchiveItem) {
+                Log.e("archive", "archive")
+                val item = v.tag as ArchiveItem
+                mListener?.onListFragmentInteraction(item)
+            }
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = list[position]
-        holder.mTitleView.text = item.title
-        holder.mDomainView.text = item.domain
-
-        val df = SimpleDateFormat.getDateInstance(DateFormat.SHORT)
-        val now = df.format(item.date!!)
-
-        holder.mDateView.text = now
-
-        with(holder.mView) {
-            tag = item
-            setOnClickListener(mOnClickListener)
+    override fun getItemViewType(position: Int): Int {
+        return when {
+            list[position] is Article -> ArticleType.ARTICLE_TYPE
+            list[position] is ArchiveItem -> ArticleType.ARCHIEVE_TYPE
+            else -> -1
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(com.textaddict.app.R.layout.fragment_article_item, parent, false)
-        return ViewHolder(view)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is ViewHolderArticle) {
+            val item = list[position] as Article
+            holder.mTitleView.text = item.title
+            holder.mDomainView.text = item.domain
+
+            val df = SimpleDateFormat.getDateInstance(DateFormat.SHORT)
+            val now = df.format(item.date!!)
+
+            holder.mDateView.text = now
+
+            with(holder.mView) {
+                tag = item
+                setOnClickListener(mOnClickListener)
+            }
+        } else {
+            holder as ViewHolderArchive
+            val item = list[position] as ArchiveItem
+            holder.mCountView.text = item.listTitles
+
+            with(holder.mView) {
+                tag = item
+                setOnClickListener(mOnClickListener)
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            ArticleType.ARTICLE_TYPE -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(com.textaddict.app.R.layout.fragment_article_item, parent, false)
+                ViewHolderArticle(view)
+            }
+            ArticleType.ARCHIEVE_TYPE -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(com.textaddict.app.R.layout.fragment_archieve_item, parent, false)
+                ViewHolderArchive(view)
+            }
+            else -> throw Exception("bad Item")
+        }
     }
 
     override fun getItemCount(): Int {
@@ -67,17 +108,33 @@ class ArticleViewAdapter internal constructor(
     }
 
     fun setList(articles: List<Article>) {
+        if (list.isNotEmpty() && isMainList) {
+            list.removeAt(0)
+        }
         val diffCallback = ArticleListDiffUtilCallback(this.list, articles)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 
         list.clear()
         list.addAll(articles)
-        //notifyDataSetChanged()
+
         diffResult.dispatchUpdatesTo(this)
+        if (isMainList) {
+            list.add(0, ArchiveItem(count.toString()))
+            notifyItemChanged(0)
+        }
+    }
+
+    fun setArchiveCount(count: Int) {
+        this.count = count
+        list.forEach {
+            if (it is ArchiveItem) {
+                it.listTitles = count.toString()
+            }
+        }
     }
 
     override fun removeItem(position: Int) {
-        actionArticle = list[position]
+        actionArticle = list[position] as Article
         actionPosition = position
 
         list.removeAt(position)
@@ -86,27 +143,21 @@ class ArticleViewAdapter internal constructor(
     }
 
     override fun restoreItem() {
-        /*val diffCallback = ArticleListDiffUtilCallback(this.articles, viewModel.articles.value!!)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)*/
-
-        //viewModel.restoreArticle(actionArticle!!)
         this.list.add(actionPosition!!, actionArticle!!)
         notifyItemInserted(actionPosition!!)
         notifyItemRangeChanged(actionPosition!!, list.size)
-
-        //diffResult.dispatchUpdatesTo(this)
     }
 
     override fun archiveItem(position: Int) {
 
     }
 
-    fun getItemFromList(position: Int): Article {
+    fun getItemFromList(position: Int): ArticleType {
         return list[position]
     }
 
-    inner class ViewHolder(val mView: View) : RecyclerView.ViewHolder(mView) {
-        val mBackground: FrameLayout = mView.item_back
+    inner class ViewHolderArticle(val mView: View) : RecyclerView.ViewHolder(mView) {
+        val mBackground: RelativeLayout = mView.item_back
         val mItemLayout: CardView? = mView.card_article_item
         val mTitleView: TextView = mView.item_article_title
         val mDomainView: TextView = mView.item_article_domain
@@ -117,34 +168,35 @@ class ArticleViewAdapter internal constructor(
         }
     }
 
+    inner class ViewHolderArchive(val mView: View) : RecyclerView.ViewHolder(mView) {
+        val mBackground: RelativeLayout = mView.item_back
+        val mCountView: TextView = mView.item_archive_count
+
+        override fun toString(): String {
+            return super.toString() + " '" + /*mTitleView.text +*/ "'"
+        }
+    }
+
 
     companion object {
         var actionArticle: Article? = null
         var actionPosition: Int? = null
-
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Article>() {
-            override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
-                return oldItem.fullPath == newItem.fullPath
-            }
-
-            override fun areContentsTheSame(oldItem: Article, newItem: Article): Boolean {
-                val (title1, _, fullPath1) = oldItem
-                val (title2, _, fullPath2) = newItem
-
-                return title1 == title2
-            }
-        }
     }
 }
 
 class ArticleListDiffUtilCallback(
-    private val oldList: List<Article>,
-    private val newList: List<Article>
+    private val oldList: List<ArticleType>,
+    private val newList: List<ArticleType>
 ) :
     DiffUtil.Callback() {
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return oldList[oldItemPosition].fullPath == newList[newItemPosition].fullPath
+        if (oldList[oldItemPosition] is Article && newList[newItemPosition] is Article) {
+            return (oldList[oldItemPosition] as Article).fullPath == (newList[newItemPosition] as Article).fullPath
+        } else if (oldList[oldItemPosition] is ArchiveItem && newList[newItemPosition] is ArchiveItem) {
+            return true
+        }
+        return false
     }
 
     override fun getOldListSize(): Int = oldList.size
@@ -152,10 +204,15 @@ class ArticleListDiffUtilCallback(
     override fun getNewListSize(): Int = newList.size
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        val (title1, _, fullPath1) = oldList[oldItemPosition]
-        val (title2, _, fullPath2) = newList[newItemPosition]
+        if (oldList[oldItemPosition] is Article && newList[newItemPosition] is Article) {
+            val (title1, _, fullPath1) = oldList[oldItemPosition] as Article
+            val (title2, _, fullPath2) = newList[newItemPosition] as Article
 
-        return title1 == title2 && fullPath1 == fullPath2
+            return title1 == title2 && fullPath1 == fullPath2
+        } else if (oldList[oldItemPosition] is ArchiveItem && newList[newItemPosition] is ArchiveItem) {
+            return true
+        }
+        return false
     }
 
     @Nullable
@@ -168,5 +225,4 @@ interface ItemTouchHelperAdapter<T : Any> {
     fun removeItem(position: Int)
     fun archiveItem(position: Int)
     fun restoreItem()
-    //fun getItem(position: Int): T
 }

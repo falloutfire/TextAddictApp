@@ -44,4 +44,7 @@
     <string name="save_article">Save article</string>
     <string name="url_site">URL site</string>
     <string name="adding_article">ADDING ARTICLE</string>
+    <string name="archived_articles">Archived articles</string>
+    <string name="article_archive_title">Article archive title</string>
+    <string name="count_articles">Count articles:</string>
 </resources>

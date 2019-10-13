@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,23 +11,21 @@ import android.widget.ProgressBar
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
+import com.textaddict.app.database.entity.ArticleType
 import com.textaddict.app.ui.adapter.ArticleViewAdapter
 import com.textaddict.app.ui.adapter.OnSwipeTouchListener
 import com.textaddict.app.ui.adapter.TouchCallbackBuilder
 import com.textaddict.app.utils.Constants
+import com.textaddict.app.utils.dpToPx
 import com.textaddict.app.utils.drawableToBitmap
 import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 
 
 class ArticleListFragment : BaseFragment() {
 
-    //internal val ACTION_DASHBOARD = HOME_FRAGMENT + "action.dashboard"
     private var columnCount = 1
     private var listener: OnListFragmentInteractionListener? = null
     private lateinit var viewModel: ListArticleViewModel
@@ -55,35 +52,39 @@ class ArticleListFragment : BaseFragment() {
             columnCount <= 1 -> LinearLayoutManager(context)
             else -> GridLayoutManager(context, columnCount)
         }
-        adapter = ArticleViewAdapter(context!!, listener)
+        adapter = ArticleViewAdapter(context!!, listener, true)
         recyclerView.adapter = adapter
 
-        val dLeft = resources.getDrawable(R.drawable.ic_archive_white_24dp).mutate()
-        val dRight = resources.getDrawable(R.drawable.ic_delete_white_24dp).mutate()
+        val dLeft = resources.getDrawable(R.drawable.ic_delete_white_24dp).mutate()
+        val dRight = resources.getDrawable(R.drawable.ic_archive_white_24dp).mutate()
         val iconSizeInDp = 24f
 
         val iconLeft = drawableToBitmap(dLeft)
         val iconRight = drawableToBitmap(dRight)
 
         val touchCallback = TouchCallbackBuilder<Article>(adapter)
-            .iconSize(dpToPx(iconSizeInDp))
-            .leftBackgroundColor(Color.parseColor("#388E3C"))
+            .iconSize(dpToPx(iconSizeInDp, context!!))
+            .leftBackgroundColor(Color.parseColor("#D32F2F"))
             .leftIcon(iconLeft)
-            .leftTextSnackBar("delete")
-            .rightBackgroundColor(Color.parseColor("#D32F2F"))
+            .leftTextSnackBar("archive")
+            .rightBackgroundColor(Color.parseColor("#388E3C"))
             .rightIcon(iconRight)
-            .rightTextSnackBar("archive")
+            .rightTextSnackBar("delete")
             .isMarginAppbar(true)
-            .view(view.findViewById(R.id.placeSnackBar))
+            .view(view.rootView)
             .onSwipeListener(object : OnSwipeTouchListener {
+                override fun onSwipeUndo(vh: RecyclerView.ViewHolder) {
+                    viewModel.unarchiveArticle(ArticleViewAdapter.actionArticle!!.id)
+                }
+
                 override fun onSwipeRight(vh: RecyclerView.ViewHolder) {
-
                     viewModel.deleteArticle(ArticleViewAdapter.actionArticle!!.id)
-
+                    Log.e("archive", ArticleViewAdapter.actionArticle!!.id.toString())
                 }
 
                 override fun onSwipeLeft(vh: RecyclerView.ViewHolder) {
-                    viewModel.deleteArticle(ArticleViewAdapter.actionArticle!!.id)
+                    viewModel.archiveArticle(ArticleViewAdapter.actionArticle!!.id)
+
                 }
             })
             .build()
@@ -91,7 +92,15 @@ class ArticleListFragment : BaseFragment() {
         val helper = ItemTouchHelper(touchCallback)
         helper.attachToRecyclerView(recyclerView)
         recyclerView.itemAnimator = null
+        val dividerItemDecoration = DividerItemDecoration(
+            recyclerView.context,
+            DividerItemDecoration.VERTICAL
+        )
+        recyclerView.addItemDecoration(dividerItemDecoration)
         subscribeUi(viewModel.articles)
+        viewModel.archivedArticles.observe(this, Observer { value ->
+            adapter.setArchiveCount(value.size)
+        })
     }
 
     override fun onAttach(context: Context) {
@@ -108,24 +117,15 @@ class ArticleListFragment : BaseFragment() {
 
         viewModel.spinner.observe(this, Observer { value ->
             value?.let { show ->
-                Log.e("test", "spinndeer")
                 spinner.visibility = if (show) View.VISIBLE else View.GONE
             }
         })
     }
 
-    private fun dpToPx(dp: Float): Float {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
-    }
-
-
     private fun subscribeUi(liveData: LiveData<List<Article>>) {
         // Update the list when the data changes
         liveData.observe(this, Observer { listArticle ->
-            listArticle?.let {
-                Log.e("update", it.size.toString())
-                adapter.setList(it)
-            }
+            adapter.setList(listArticle)
         })
 
 
@@ -140,17 +140,6 @@ class ArticleListFragment : BaseFragment() {
     override fun onDetach() {
         super.onDetach()
         listener = null
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     *
-     */
-    interface OnListFragmentInteractionListener {
-        fun onListFragmentInteraction(item: Article?)
     }
 
     companion object {
@@ -168,4 +157,15 @@ class ArticleListFragment : BaseFragment() {
                 }
             }
     }
+}
+
+/**
+ * This interface must be implemented by activities that contain this
+ * fragment to allow an interaction in this fragment to be communicated
+ * to the activity and potentially other fragments contained in that
+ * activity.
+ *
+ */
+interface OnListFragmentInteractionListener {
+    fun onListFragmentInteraction(item: ArticleType?)
 }

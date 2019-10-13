@@ -13,19 +13,17 @@ class ListArticleViewModel(application: Application) : AppViewModel(application)
 
     private val repository: ArticleRepository
     val articles: LiveData<List<Article>>
+    val archivedArticles: LiveData<List<Article>>
 
     val title: LiveData<String>
         get() = _title
     private val _title = MutableLiveData<String>()
 
-    val page: LiveData<String>
-        get() = _page
-    private val _page = MutableLiveData<String>()
-
     init {
         val articleDao = AppDatabase.getDatabase(application, viewModelScope).articleDao()
         repository = ArticleRepository(articleDao)
         articles = repository.articles
+        archivedArticles = repository.archivedArticles
     }
 
     fun addData(userId: Long) {
@@ -37,6 +35,18 @@ class ListArticleViewModel(application: Application) : AppViewModel(application)
     fun restoreArticle(article: Article) {
         launchDataLoad {
             repository.restoreArticleInDataBase(article)
+        }
+    }
+
+    fun archiveArticle(id: Long) {
+        launchDataLoad {
+            repository.archiveArticleInDataBase(id)
+        }
+    }
+
+    fun unarchiveArticle(id: Long) {
+        launchDataLoad {
+            repository.unarchiveArticleInDataBase(id)
         }
     }
 

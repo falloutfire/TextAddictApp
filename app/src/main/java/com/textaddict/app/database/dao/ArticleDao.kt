@@ -15,6 +15,18 @@ interface ArticleDao {
     @Query("select * from Article")
     fun loadAllArticle(): LiveData<List<Article>>
 
+    @Query("select * from Article where archive = 0")
+    fun loadAllArticleWithoutArchive(): LiveData<List<Article>>
+
+    @Query("select * from Article where archive = 1")
+    fun loadAllArchivedArticle(): LiveData<List<Article>>
+
+    @Query("UPDATE Article set archive = 1 where id = :id")
+    fun setArchiveArticle(id: Long)
+
+    @Query("UPDATE Article set archive = 0 where id = :id")
+    fun setUnarchiveArticle(id: Long)
+
     @Query("select * from Article")
     fun loadAllArticleCheck(): List<Article>
 

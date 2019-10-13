@@ -1,9 +1,11 @@
 package com.textaddict.app.utils
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.TypedValue
 
 
 fun drawableToBitmap(drawable: Drawable): Bitmap {
@@ -22,4 +24,12 @@ fun drawableToBitmap(drawable: Drawable): Bitmap {
     drawable.draw(canvas)
 
     return bitmap
+}
+
+fun dpToPx(dp: Float, context: Context): Float {
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        dp,
+        context.resources.displayMetrics
+    )
 }

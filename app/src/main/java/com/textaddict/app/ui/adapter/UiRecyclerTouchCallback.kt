@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.graphics.*
-import android.os.Handler
 import android.util.TypedValue
 import android.view.View
 import android.view.animation.AccelerateInterpolator
@@ -35,8 +34,8 @@ class UiRecyclerTouchCallback<T : Any>(
     private var rightTextSnackBar: String = ""
     private var leftTextSnackBar: String = ""
 
-    private val COLLAPSE_INTERPOLATOR: Interpolator = AccelerateInterpolator(4f)
-    private val COLLAPSE_ANIM_DURATION = 500L
+    private val COLLAPSE_INTERPOLATOR: Interpolator = AccelerateInterpolator(1f)
+    private val COLLAPSE_ANIM_DURATION = 250L
 
     private var circlePaintLeft: Paint? = Paint(Paint.ANTI_ALIAS_FLAG)
     private var circlePaintRight: Paint? = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -65,6 +64,22 @@ class UiRecyclerTouchCallback<T : Any>(
         }
     }
 
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
+        if (viewHolder is ArticleViewAdapter.ViewHolderArchive) return makeMovementFlags(0, 0)
+        return makeMovementFlags(0, ItemTouchHelper.LEFT /*or ItemTouchHelper.RIGHT*/)
+    }
+
+    override fun onMove(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        viewHolder1: RecyclerView.ViewHolder
+    ): Boolean {
+        return false
+    }
+
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         var snackBar: Snackbar? = null
         var isCancel = false
@@ -81,14 +96,15 @@ class UiRecyclerTouchCallback<T : Any>(
 
         if (direction == ItemTouchHelper.LEFT) {
             snackBar = createSnackBar(leftTextSnackBar)
-        } else if (direction == ItemTouchHelper.RIGHT) {
+        } /*else if (direction == ItemTouchHelper.RIGHT) {
             snackBar = createSnackBar(rightTextSnackBar)
-        }
+        }*/
 
         set.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 snackBar!!.show()
                 adapter.removeItem(viewHolder.adapterPosition)
+                onSwipeTouchListener.onSwipeLeft(viewHolder)
             }
 
             override fun onAnimationStart(animation: Animator?) {
@@ -99,78 +115,15 @@ class UiRecyclerTouchCallback<T : Any>(
 
         snackBar!!.setAction("UNDO") {
             isCancel = true
-            val back = (viewHolder as ArticleViewAdapter.ViewHolder).mBackground
+            val back = (viewHolder as ArticleViewAdapter.ViewHolderArticle).mBackground
             back.setBackgroundColor(Color.TRANSPARENT)
             snackBar.dismiss()
             unSet.play(animBack)
             unSet.start()
+            onSwipeTouchListener.onSwipeUndo(viewHolder)
             adapter.restoreItem()
         }
-
-        val handler = Handler()
-        handler.postDelayed({
-            snackBar.dismiss()
-            if (!isCancel) {
-                if (direction == ItemTouchHelper.LEFT) {
-                    onSwipeTouchListener.onSwipeLeft(viewHolder)
-                } else if (direction == ItemTouchHelper.RIGHT) {
-                    onSwipeTouchListener.onSwipeRight(viewHolder)
-                }
-            }
-        }, 3000)
     }
-
-    override fun getMovementFlags(
-        recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder
-    ): Int {
-        return makeMovementFlags(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT)
-    }
-
-    override fun onMove(
-        recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder,
-        viewHolder1: RecyclerView.ViewHolder
-    ): Boolean {
-        return false
-    }
-
-    /*override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-        getDefaultUIUtil().clearView((viewHolder as ArticleViewAdapter.ViewHolder).mItemLayout)
-    }
-
-    override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-        if (viewHolder != null) {
-            getDefaultUIUtil()
-                .onSelected((viewHolder as ArticleViewAdapter.ViewHolder).mItemLayout)
-        }
-    }*/
-
-    /*override fun onChildDraw(
-        c: Canvas,
-        recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder,
-        dX: Float,
-        dY: Float,
-        actionState: Int,
-        isCurrentlyActive: Boolean
-    ) {
-        val back = (viewHolder as ArticleViewAdapter.ViewHolder).mBackground
-        when {
-            dX > 0 -> back.setBackgroundColor(Color.GREEN)
-            dX < 0 -> back.setBackgroundColor(Color.RED)
-            else -> back.setBackgroundColor(Color.TRANSPARENT)
-        }
-        getDefaultUIUtil().onDraw(
-            c,
-            recyclerView,
-            viewHolder.mItemLayout,
-            dX,
-            dY,
-            actionState,
-            isCurrentlyActive
-        )
-    }*/
 
     override fun onChildDraw(
         c: Canvas,
@@ -181,16 +134,6 @@ class UiRecyclerTouchCallback<T : Any>(
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-
-        /*val back = (viewHolder as ArticleViewAdapter.ViewHolder).mBackground
-        val card = viewHolder.mItemLayout
-
-        when {
-            dX > 0 -> back.setBackgroundColor(Color.GREEN)
-            dX < 0 -> back.setBackgroundColor(Color.RED)
-            else -> back.setBackgroundColor(Color.TRANSPARENT)
-        }
-        getDefaultUIUtil().onDrawOver(c, recyclerView, card, dX, dY, actionState, isCurrentlyActive)*/
 
         val CIRCLE_ACCELERATION = 2F
         val threshold = 0.3f
@@ -237,7 +180,7 @@ class UiRecyclerTouchCallback<T : Any>(
                 val margin = itemWidth * 0.025f
 
                 if (dX > 0) {
-                    paint.color = Color.GRAY
+                    paint.color = Color.parseColor("#FF333C46")
                     val background = RectF(left, top, dX + 25, bottom)
                     c.drawRect(background, paint)
 
@@ -259,7 +202,7 @@ class UiRecyclerTouchCallback<T : Any>(
                     )
                     c.drawBitmap(leftIcon, null, iconRect, paint)
                 } else {
-                    paint.color = Color.GRAY
+                    paint.color = Color.parseColor("#FF333C46")
                     val background = RectF(right + dX - 25, top, right, bottom)
                     c.drawRect(background, paint)
 
@@ -299,7 +242,7 @@ class UiRecyclerTouchCallback<T : Any>(
     }
 
     override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float {
-        return 0.7f
+        return 0.3f
     }
 
     private fun createSnackBar(text: String): Snackbar {
@@ -307,17 +250,17 @@ class UiRecyclerTouchCallback<T : Any>(
             .make(
                 view,
                 text,
-                Snackbar.LENGTH_INDEFINITE
+                Snackbar.LENGTH_LONG
             )
 
         snackBar.setActionTextColor(Color.YELLOW)
 
         if (isMarginAppbar) {
             val typedValue = TypedValue()
-            val textSizeAttr = intArrayOf(android.R.attr.actionBarSize)
-            val indexOfAttrTextSize = 0
-            val a = obtainStyledAttributes(view.context, typedValue.data, textSizeAttr)
-            val textSize = a.getDimensionPixelSize(indexOfAttrTextSize, 0)
+            val marginSizeAttr = intArrayOf(android.R.attr.actionBarSize)
+            val indexOfAttrMarginSize = 0
+            val a = obtainStyledAttributes(view.context, typedValue.data, marginSizeAttr)
+            val marginSize = a.getDimensionPixelSize(indexOfAttrMarginSize, 0)
             a.recycle()
 
             snackBar.apply {
@@ -326,7 +269,7 @@ class UiRecyclerTouchCallback<T : Any>(
                         leftMargin,
                         topMargin,
                         rightMargin,
-                        textSize
+                        marginSize
                     )
                 }
             }
@@ -408,4 +351,6 @@ interface OnSwipeTouchListener {
     fun onSwipeRight(vh: RecyclerView.ViewHolder)
 
     fun onSwipeLeft(vh: RecyclerView.ViewHolder)
+
+    fun onSwipeUndo(vh: RecyclerView.ViewHolder)
 }

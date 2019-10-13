@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.textaddict.app.R
 import com.textaddict.app.database.entity.Article
+import com.textaddict.app.database.entity.ArticleType
 import com.textaddict.app.ui.activity.StartUpActivity.Companion.APP_PREFERENCES
 import com.textaddict.app.ui.fragment.*
 import com.textaddict.app.utils.Constants.ACTION
@@ -30,7 +31,7 @@ import com.textaddict.app.utils.StackListManager.Companion.updateStackToIndexFir
 import com.textaddict.app.utils.StackListManager.Companion.updateTabStackIndex
 import java.util.*
 
-class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInteractionListener,
+class MainActivity : AppCompatActivity(), OnListFragmentInteractionListener,
     ArchiveFragment.OnFragmentInteractionListener, ProfileFragment.OnFragmentInteractionListener,
     FragmentInteractionCallback {
 
@@ -76,11 +77,16 @@ class MainActivity : AppCompatActivity(), ArticleListFragment.OnListFragmentInte
         resolveBackPressed()
     }
 
-    override fun onListFragmentInteraction(item: Article?) {
-        val intent = Intent(this, ArticleActivity::class.java)
-        intent.putExtra("DOMAIN", item?.fullPath)
-        intent.putExtra("ID", item?.id)
-        startActivity(intent)
+    override fun onListFragmentInteraction(item: ArticleType?) {
+        if (item is Article) {
+            val intent = Intent(this, ArticleActivity::class.java)
+            intent.putExtra("DOMAIN", item.fullPath)
+            intent.putExtra("ID", item.id)
+            startActivity(intent)
+        } else {
+            val intent = Intent(this, ArchiveListActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     fun logoutFromApp() {

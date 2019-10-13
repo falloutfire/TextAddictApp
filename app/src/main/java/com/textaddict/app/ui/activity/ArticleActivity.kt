@@ -136,6 +136,10 @@ class ArticleActivity : AppCompatActivity(), ArticleFragment.OnFragmentInteracti
                 Log.e("archive", "article")
                 return true
             }
+            android.R.id.home -> {
+                onBackPressed()
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

@@ -14,7 +14,11 @@ import java.util.*
 class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: ArticleDao) {
 
     val articles: LiveData<List<Article>> by lazy(LazyThreadSafetyMode.NONE) {
-        Transformations.map(articleDao.loadAllArticle()) { it }
+        Transformations.map(articleDao.loadAllArticleWithoutArchive()) { it }
+    }
+
+    val archivedArticles: LiveData<List<Article>> by lazy(LazyThreadSafetyMode.NONE) {
+        Transformations.map(articleDao.loadAllArchivedArticle()) { it }
     }
 
     suspend fun refreshListArticle() {
@@ -30,7 +34,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
                 DataGenerator().getHost("https://www.baeldung.com/spring-resttemplate-post-json"),
                 "https://www.baeldung.com/spring-resttemplate-post-json",
                 Date(System.currentTimeMillis()),
-                null, archieve = false, favorite = false, userId = userId
+                null, archive = false, userId = userId
             )
             articleDao.insertArticle(article)
         }
@@ -43,7 +47,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
                 DataGenerator().getHost(url),
                 url,
                 Date(System.currentTimeMillis()),
-                null, archieve = false, favorite = false, userId = userId
+                null, archive = false, userId = userId
             )
             articleDao.insertArticle(article)
         }
@@ -56,7 +60,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
                 DataGenerator().getHost(url),
                 url,
                 Date(System.currentTimeMillis()),
-                null, archieve = false, favorite = false, userId = userId
+                null, archive = false, userId = userId
             )
             articleDao.insertArticle(article)
         }
@@ -65,6 +69,18 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
     suspend fun removeArticleInDataBase(articleId: Long) {
         return withContext(Dispatchers.IO) {
             articleDao.deleteArticle(articleId)
+        }
+    }
+
+    suspend fun archiveArticleInDataBase(articleId: Long) {
+        return withContext(Dispatchers.IO) {
+            articleDao.setArchiveArticle(articleId)
+        }
+    }
+
+    suspend fun unarchiveArticleInDataBase(articleId: Long) {
+        return withContext(Dispatchers.IO) {
+            articleDao.setUnarchiveArticle(articleId)
         }
     }
 
@@ -96,7 +112,7 @@ class ArticleRepository(/*val network: MainNetwork,*/ private val articleDao: Ar
                             page.uri.path,
                             Date(System.currentTimeMillis()),
                             page.article.outerHtml(),
-                            archieve = false, favorite = false, userId = 0
+                            archive = false, userId = 0
                         )
                     )
                     return@withContext page.article.outerHtml()

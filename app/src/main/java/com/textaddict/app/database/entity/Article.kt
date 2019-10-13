@@ -19,19 +19,20 @@ data class Article(
     @TypeConverters(Converters::class)
     var date: Date?,
     var content: String?,
-    var archieve: Boolean = false,
-    var favorite: Boolean = false,
+    var archive: Boolean = false,
     @ColumnInfo(name = "user_id")
     var userId: Long
-) {
+) : ArticleType {
 
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
-    var status: Int = 1
+}
 
-    enum class Status {
-        ACTIVE,
-        CHECKED,
-        DELETED
+data class ArchiveItem(var listTitles: String) : ArticleType
+
+interface ArticleType {
+    companion object {
+        val ARTICLE_TYPE = 0
+        val ARCHIEVE_TYPE = 1
     }
 }
