@@ -1,7 +1,6 @@
 package com.textaddict.app.ui.activity
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -47,22 +46,23 @@ class ArchiveListActivity : AppCompatActivity(), OnListFragmentInteractionListen
             columnCount <= 1 -> LinearLayoutManager(this)
             else -> GridLayoutManager(this, columnCount)
         }
-        adapter = ArticleViewAdapter(this, this, false)
+        adapter = ArticleViewAdapter(recyclerView, this, false)
         recyclerView.adapter = adapter
 
         val dLeft = resources.getDrawable(R.drawable.ic_delete_white_24dp).mutate()
-        val dRight = resources.getDrawable(R.drawable.ic_archive_white_24dp).mutate()
+        val dRight = resources.getDrawable(R.drawable.ic_unarchive_white_24dp).mutate()
         val iconSizeInDp = 24f
 
         val iconLeft = drawableToBitmap(dLeft)
         val iconRight = drawableToBitmap(dRight)
 
         val touchCallback = TouchCallbackBuilder<Article>(adapter)
+            .backgroundColor(resources.getColor(R.color.colorBackground))
             .iconSize(dpToPx(iconSizeInDp, this))
-            .leftBackgroundColor(Color.parseColor("#388E3C"))
+            .leftBackgroundColor(resources.getColor(R.color.colorLightBlue))
             .leftIcon(iconLeft)
             .leftTextSnackBar("Article deleted")
-            .rightBackgroundColor(Color.parseColor("#D32F2F"))
+            .rightBackgroundColor(resources.getColor(R.color.colorLightBlue))
             .rightIcon(iconRight)
             .rightTextSnackBar("Article unarchived")
             .isMarginAppbar(false)

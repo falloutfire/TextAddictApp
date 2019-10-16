@@ -1,10 +1,10 @@
 package com.textaddict.app.ui.fragment
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
@@ -26,7 +26,7 @@ import com.textaddict.app.utils.drawableToBitmap
 import com.textaddict.app.viewmodel.impl.ListArticleViewModel
 
 
-class ArticleListFragment : BaseFragment() {
+class ArticleListFragment : BaseFragment(), OnActionItemClickListener {
 
     private var columnCount = 1
     private var listener: OnListFragmentInteractionListener? = null
@@ -34,6 +34,8 @@ class ArticleListFragment : BaseFragment() {
     private lateinit var adapter: ArticleViewAdapter
     private lateinit var spinner: ProgressBar
     private var actionMode: ActionMode? = null
+    private lateinit var actionModeController: ActionModeController
+    private lateinit var tracker: SelectionTracker<ArticleType>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,7 +57,7 @@ class ArticleListFragment : BaseFragment() {
             columnCount <= 1 -> LinearLayoutManager(context)
             else -> GridLayoutManager(context, columnCount)
         }
-        adapter = ArticleViewAdapter(context!!, listener, true)
+        adapter = ArticleViewAdapter(recyclerView, listener, true)
         recyclerView.adapter = adapter
 
         val dLeft = resources.getDrawable(R.drawable.ic_delete_white_24dp).mutate()
@@ -66,14 +68,15 @@ class ArticleListFragment : BaseFragment() {
         val iconRight = drawableToBitmap(dRight)
 
         val touchCallback = TouchCallbackBuilder<Article>(adapter)
+            .backgroundColor(resources.getColor(R.color.colorBackground))
             .iconSize(dpToPx(iconSizeInDp, context!!))
-            .leftBackgroundColor(Color.parseColor("#D32F2F"))
+            .leftBackgroundColor(resources.getColor(R.color.colorLightBlue))
             .leftIcon(iconLeft)
-            .leftTextSnackBar("archive")
-            .rightBackgroundColor(Color.parseColor("#388E3C"))
+            .leftTextSnackBar("Archive")
+            .rightBackgroundColor(resources.getColor(R.color.colorLightBlue))
             .rightIcon(iconRight)
-            .rightTextSnackBar("delete")
-            .isMarginAppbar(true)
+            .rightTextSnackBar("Delete")
+            .isMarginAppbar(false)
             .view(view.rootView)
             .onSwipeListener(object : OnSwipeTouchListener {
                 override fun onSwipeUndo(vh: RecyclerView.ViewHolder) {
@@ -101,22 +104,30 @@ class ArticleListFragment : BaseFragment() {
         )
         recyclerView.addItemDecoration(dividerItemDecoration)
 
-        val tracker = SelectionTracker.Builder<ArticleType>(// индетифицируем трекер в констексе
+        tracker = SelectionTracker.Builder<ArticleType>(
+            // индетифицируем трекер в констексе
             "article-selection-id",
-            recyclerView, // для Long ItemKeyProvider реализован в виде StableIdKeyProvider
+            recyclerView,
+            // для Long ItemKeyProvider реализован в виде StableIdKeyProvider
             ArticleKeyProvider(adapter.list),
-            ArticleLookup(recyclerView), // существуют аналогичные реализации для Long и String
+            ArticleLookup(recyclerView),
+            // существуют аналогичные реализации для Long и String
             StorageStrategy.createParcelableStorage(ArticleType::class.java)
         ).build()
 
         adapter.selectionTracker = tracker
+
+        actionModeController = ActionModeController(tracker, touchCallback).also {
+            it.createActionMode(R.menu.action_menu)
+            it.onActionItemClickListener = this
+        }
 
         tracker.addObserver(object : SelectionTracker.SelectionObserver<Any>() {
             override fun onItemStateChanged(key: Any, selected: Boolean) {
                 super.onItemStateChanged(key, selected)
                 if (tracker.hasSelection() && actionMode == null) {
                     actionMode = (activity as AppCompatActivity).startSupportActionMode(
-                        ActionModeController(tracker)
+                        actionModeController
                     )
                     setSelectedTitle(tracker.selection.size())
                 } else if (!tracker.hasSelection()) {
@@ -166,6 +177,32 @@ class ArticleListFragment : BaseFragment() {
             // sync.
             //mBinding.executePendingBindings()
         })*/
+    }
+
+    override fun onActionItemClick(item: MenuItem) {
+        when (item.itemId) {
+            R.id.action_delete -> {
+                val selection = adapter.selectionTracker!!.selection.toCollection(arrayListOf())
+                val confirm = ConfirmDialogFragment(
+                    resources.getString(R.string.confirm_delete),
+                    object : OnInteractionDialog {
+                        override fun positiveInteraction() {
+                            for (i in selection) {
+                                val index = adapter.list.indexOf(i)
+                                adapter.list.remove(i)
+                                adapter.notifyItemRemoved(index)
+                                viewModel.deleteArticle((i as Article).id)
+                            }
+                        }
+
+                        override fun negativeInteraction() {
+                            actionModeController.closeActionMode()
+                        }
+
+                    })
+                confirm.show(activity!!.supportFragmentManager, "ConfirmDialogFragment")
+            }
+        }
     }
 
     override fun onDetach() {

@@ -12,6 +12,7 @@
     <!--<color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#B9BBBD</color>-->
+    <color name="colorLightBlue">#6CA0D9</color>
     <color name="colorBackground">#333C46</color>
     <color name="colorSplashText">#F0F0F0</color>
     <color name="colorProgressBar">#FFCE511C</color>

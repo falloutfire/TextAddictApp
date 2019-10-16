@@ -22,8 +22,8 @@ class LayoutParamHeightAnimator(target: View, vararg values: Int) : ValueAnimato
             return LayoutParamHeightAnimator(target, target.height, 0)
         }
 
-        fun uncollapse(target: View): LayoutParamHeightAnimator {
-            return LayoutParamHeightAnimator(target, 0, target.height)
+        fun uncollapse(target: View, height: Int): LayoutParamHeightAnimator {
+            return LayoutParamHeightAnimator(target, 0, height)
         }
     }
 

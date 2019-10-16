@@ -7,9 +7,4 @@
         android:icon="@drawable/ic_delete_white_24dp"
         android:title="@string/delete_article"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/action_cancel"
-        android:icon="@drawable/ic_close_white_24dp"
-        android:title="@string/cancel"
-        app:showAsAction="always" />
 </menu>

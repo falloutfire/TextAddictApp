@@ -1,10 +1,13 @@
 package com.textaddict.app.ui.adapter
 
-import android.content.Context
-import android.util.Log
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.Interpolator
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -30,17 +33,19 @@ import java.text.SimpleDateFormat
  * specified [OnListFragmentInteractionListener].
  */
 class ArticleViewAdapter internal constructor(
-    context: Context,
+    private val recyclerView: RecyclerView,
     private val mListener: OnListFragmentInteractionListener?,
     private val isMainList: Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     ItemTouchHelperAdapter<ArticleType> {
 
-    private val inflater: LayoutInflater = LayoutInflater.from(context)
     private val mOnClickListener: View.OnClickListener
     val list: ArrayList<ArticleType> = arrayListOf()
     private var count: Int = 0
     var selectionTracker: SelectionTracker<ArticleType>? = null
+    private val COLLAPSE_INTERPOLATOR: Interpolator = AccelerateInterpolator(1f)
+    private val COLLAPSE_ANIM_DURATION = 250L
+    private var collapseHeight = 0
 
     init {
         mOnClickListener = View.OnClickListener { v ->
@@ -50,7 +55,6 @@ class ArticleViewAdapter internal constructor(
                 // one) that an item has been selected.
                 mListener?.onListFragmentInteraction(item)
             } else if (v.tag is ArchiveItem) {
-                Log.e("archive", "archive")
                 val item = v.tag as ArchiveItem
                 mListener?.onListFragmentInteraction(item)
             }
@@ -84,6 +88,14 @@ class ArticleViewAdapter internal constructor(
                     holder.mChoose.visibility = View.GONE
                     holder.setActivatedState(false)
                 }
+            }
+
+            if (holder.itemView.height < collapseHeight) {
+                val set = AnimatorSet()
+                val anim = LayoutParamHeightAnimator.uncollapse(holder.itemView, collapseHeight)
+                anim.setDuration(COLLAPSE_ANIM_DURATION).interpolator = COLLAPSE_INTERPOLATOR
+                set.play(anim)
+                set.start()
             }
 
             with(holder.mView) {
@@ -148,19 +160,47 @@ class ArticleViewAdapter internal constructor(
         }
     }
 
-    override fun removeItem(position: Int) {
-        actionArticle = list[position] as Article
-        actionPosition = position
+    override fun removeItem(
+        viewHolder: RecyclerView.ViewHolder,
+        onSwipeTouchListener: OnSwipeTouchListener
+    ) {
+        val set = AnimatorSet()
+        val animHeight = LayoutParamHeightAnimator.collapse(viewHolder.itemView)
+        collapseHeight = viewHolder.itemView.height
+        animHeight.setDuration(COLLAPSE_ANIM_DURATION).interpolator = COLLAPSE_INTERPOLATOR
+        set.play(animHeight)
 
-        list.removeAt(position)
-        notifyItemRemoved(position)
-        notifyItemRangeChanged(position, list.size)
+        set.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                actionArticle = list[viewHolder.adapterPosition] as Article
+                actionPosition = viewHolder.adapterPosition
+                onSwipeTouchListener.onSwipeLeft(viewHolder)
+                list.removeAt(viewHolder.adapterPosition)
+                notifyItemRemoved(viewHolder.adapterPosition)
+                notifyItemRangeChanged(viewHolder.adapterPosition, list.size)
+            }
+
+            override fun onAnimationStart(animation: Animator?) {
+            }
+        })
+        set.start()
     }
 
-    override fun restoreItem() {
+    override fun restoreItem(
+        viewHolder: RecyclerView.ViewHolder,
+        onSwipeTouchListener: OnSwipeTouchListener
+    ) {
+        val set = AnimatorSet()
+        val animHeight = LayoutParamHeightAnimator.uncollapse(viewHolder.itemView, collapseHeight)
+
+        onSwipeTouchListener.onSwipeUndo(viewHolder)
+        animHeight.setDuration(COLLAPSE_ANIM_DURATION).interpolator = COLLAPSE_INTERPOLATOR
+        set.play(animHeight)
+
         this.list.add(actionPosition!!, actionArticle!!)
         notifyItemInserted(actionPosition!!)
-        notifyItemRangeChanged(actionPosition!!, list.size)
+        notifyItemRangeChanged(0, list.size)
+        set.start()
     }
 
     override fun archiveItem(position: Int) {
@@ -216,7 +256,8 @@ class ArticleListDiffUtilCallback(
 
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         if (oldList[oldItemPosition] is Article && newList[newItemPosition] is Article) {
-            return (oldList[oldItemPosition] as Article).fullPath == (newList[newItemPosition] as Article).fullPath
+            return (((oldList[oldItemPosition] as Article).fullPath == (newList[newItemPosition] as Article).fullPath)
+                    && (oldList[oldItemPosition] as Article).id == (newList[newItemPosition] as Article).id)
         } else if (oldList[oldItemPosition] is ArchiveItem && newList[newItemPosition] is ArchiveItem) {
             return true
         }
@@ -246,7 +287,7 @@ class ArticleListDiffUtilCallback(
 }
 
 interface ItemTouchHelperAdapter<T : Any> {
-    fun removeItem(position: Int)
     fun archiveItem(position: Int)
-    fun restoreItem()
+    fun restoreItem(viewHolder: RecyclerView.ViewHolder, onSwipeTouchListener: OnSwipeTouchListener)
+    fun removeItem(viewHolder: RecyclerView.ViewHolder, onSwipeTouchListener: OnSwipeTouchListener)
 }

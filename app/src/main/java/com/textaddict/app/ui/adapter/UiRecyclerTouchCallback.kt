@@ -1,13 +1,9 @@
 package com.textaddict.app.ui.adapter
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.AnimatorSet
 import android.graphics.*
+import android.os.Handler
 import android.util.TypedValue
 import android.view.View
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.Interpolator
 import androidx.appcompat.widget.TintTypedArray.obtainStyledAttributes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -33,9 +29,9 @@ class UiRecyclerTouchCallback<T : Any>(
     private var isMarginAppbar: Boolean = false
     private var rightTextSnackBar: String = ""
     private var leftTextSnackBar: String = ""
+    private var backgroundColor: Int
 
-    private val COLLAPSE_INTERPOLATOR: Interpolator = AccelerateInterpolator(1f)
-    private val COLLAPSE_ANIM_DURATION = 250L
+    var isChange = false
 
     private var circlePaintLeft: Paint? = Paint(Paint.ANTI_ALIAS_FLAG)
     private var circlePaintRight: Paint? = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -43,6 +39,7 @@ class UiRecyclerTouchCallback<T : Any>(
     init {
         this.mClearPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
         this.onSwipeTouchListener = b.onSwipeTouchListener!!
+        this.backgroundColor = b.backgroundColor
 
         this.leftBackgroundColor = b.leftBackgroundColor
         this.leftIcon = b.leftIcon!!
@@ -69,7 +66,11 @@ class UiRecyclerTouchCallback<T : Any>(
         viewHolder: RecyclerView.ViewHolder
     ): Int {
         if (viewHolder is ArticleViewAdapter.ViewHolderArchive) return makeMovementFlags(0, 0)
-        return makeMovementFlags(0, ItemTouchHelper.LEFT /*or ItemTouchHelper.RIGHT*/)
+        return if (!isChange) {
+            makeMovementFlags(0, ItemTouchHelper.LEFT /*or ItemTouchHelper.RIGHT*/)
+        } else {
+            makeMovementFlags(0, 0)
+        }
     }
 
     override fun onMove(
@@ -82,42 +83,22 @@ class UiRecyclerTouchCallback<T : Any>(
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         var snackBar: Snackbar? = null
-        val set = AnimatorSet()
-        val unSet = AnimatorSet()
-
-        val animHeight = LayoutParamHeightAnimator.collapse(viewHolder.itemView)
-        val animBack = LayoutParamHeightAnimator.uncollapse(viewHolder.itemView)
-
-        animHeight.setDuration(COLLAPSE_ANIM_DURATION).interpolator = COLLAPSE_INTERPOLATOR
-        animBack.setDuration(COLLAPSE_ANIM_DURATION).interpolator = COLLAPSE_INTERPOLATOR
-
-        set.play(animHeight)
 
         if (direction == ItemTouchHelper.LEFT) {
             snackBar = createSnackBar(leftTextSnackBar)
         }
 
-        set.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator?) {
-                snackBar!!.show()
-                adapter.removeItem(viewHolder.adapterPosition)
-                onSwipeTouchListener.onSwipeLeft(viewHolder)
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-            }
-        })
-
-        set.start()
+        isChange = true
+        adapter.removeItem(viewHolder, onSwipeTouchListener).also {
+            snackBar!!.show()
+            Handler().postDelayed({
+                isChange = false
+            }, 300)
+        }
 
         snackBar!!.setAction("UNDO") {
-            val back = (viewHolder as ArticleViewAdapter.ViewHolderArticle).mBackground
-            back.setBackgroundColor(Color.TRANSPARENT)
             snackBar.dismiss()
-            unSet.play(animBack)
-            unSet.start()
-            onSwipeTouchListener.onSwipeUndo(viewHolder)
-            adapter.restoreItem()
+            adapter.restoreItem(viewHolder, onSwipeTouchListener)
         }
     }
 
@@ -176,7 +157,7 @@ class UiRecyclerTouchCallback<T : Any>(
                 val margin = itemWidth * 0.025f
 
                 if (dX < 0) {
-                    paint.color = Color.parseColor("#FF333C46")
+                    paint.color = backgroundColor
                     val background = RectF(right + dX - 25, top, right, bottom)
                     c.drawRect(background, paint)
 
@@ -198,7 +179,7 @@ class UiRecyclerTouchCallback<T : Any>(
                     )
                     c.drawBitmap(rightIcon, null, iconRect, paint)
                 } else {
-                    paint.color = Color.parseColor("#FF333C46")
+                    paint.color = backgroundColor
                     val background = RectF(left, top, dX + 25, bottom)
                     c.drawRect(background, paint)
 
@@ -246,7 +227,7 @@ class UiRecyclerTouchCallback<T : Any>(
             .make(
                 view,
                 text,
-                Snackbar.LENGTH_LONG
+                Snackbar.LENGTH_SHORT
             )
 
         snackBar.setActionTextColor(Color.YELLOW)
@@ -260,14 +241,15 @@ class UiRecyclerTouchCallback<T : Any>(
             a.recycle()
 
             snackBar.apply {
-                view.layoutParams = (view.layoutParams as CoordinatorLayout.LayoutParams).apply {
-                    setMargins(
-                        leftMargin,
-                        topMargin,
-                        rightMargin,
-                        marginSize
-                    )
-                }
+                view.layoutParams =
+                    (view.layoutParams as CoordinatorLayout.LayoutParams).apply {
+                        setMargins(
+                            leftMargin,
+                            topMargin,
+                            rightMargin,
+                            marginSize
+                        )
+                    }
             }
         }
         return snackBar
@@ -278,6 +260,7 @@ class TouchCallbackBuilder<T : Any>(val adapter: ArticleViewAdapter) {
 
     var onSwipeTouchListener: OnSwipeTouchListener? = null
     var view: View? = null
+    var backgroundColor: Int = 0
     var leftBackgroundColor: Int = 0
     var leftIcon: Bitmap? = null
     var rightBackgroundColor: Int = 0
@@ -286,6 +269,11 @@ class TouchCallbackBuilder<T : Any>(val adapter: ArticleViewAdapter) {
     var iconSize: Float = 0F
     var rightTextSnackBar: String = ""
     var leftTextSnackBar: String = ""
+
+    fun backgroundColor(backgroundColor: Int): TouchCallbackBuilder<T> {
+        this.backgroundColor = backgroundColor
+        return this
+    }
 
     fun rightTextSnackBar(rightTextSnackBar: String): TouchCallbackBuilder<T> {
         this.rightTextSnackBar = rightTextSnackBar
