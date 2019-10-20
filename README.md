@@ -1,9 +1,7 @@
 # Text Addict App
 Application for reading articles for Android
 
-![screenshots of app](./.github/photo_1.jpg)
-![screenshots of app](./.github/photo_2.jpg)
-![screenshots of app](./.github/photo_3.jpg)
+![screenshots of app](./.github/screen.png)
 
 #Features
 * Save articles on your phone
