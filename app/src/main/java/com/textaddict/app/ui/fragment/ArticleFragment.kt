@@ -4,10 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
@@ -55,21 +55,21 @@ class ArticleFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_article, container, false)
 
-        content_view = view.findViewById(R.id.fullscreen_content_web_view)
+        //content_view = view.findViewById(R.id.fullscreen_content_web_view)
         //content_view.setOnClickListener { toggle() }
 
-        //val webView: WebView = findViewById(R.userId.fullscreen_content_web_view)
+        val webView: WebView = view.findViewById(R.id.fullscreen_content_web_view)
         viewModel = ViewModelProvider(this).get(ArticleViewModel::class.java)
 
         // update the title when the [ListArticleViewModel.title] changes
         viewModel.title.observe(this, Observer { value ->
             value.let {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     content_view.text = Html.fromHtml(it, Html.FROM_HTML_MODE_COMPACT)
                 } else {
                     content_view.text = Html.fromHtml(it)
-                }
-                //webView.loadDataWithBaseURL("", it, mimeType, encoding, "")
+                }*/
+                webView.loadDataWithBaseURL("", it, mimeType, encoding, "")
             }
         })
 
